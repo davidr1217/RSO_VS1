@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selección de Rol - Ruta Sin Obstáculos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --azul-oscuro: #002244; /* azul sólido */
+      --azul-claro: #3399CC;
+      --rojo: #CC3333;
+      --blanco: #FFFFFF;
+      --gris-claro: #F5F5F5;
+      --gris-medio: #DDDDDD;
+      --gris-oscuro: #666666;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--gris-claro); color: #333; line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; flex: 1; }
+    header {
+      background-color: var(--azul-oscuro);
+      color: var(--blanco);
+      padding: 20px 0;
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 5px solid var(--rojo);
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .logo { display: flex; align-items: center; justify-content: center; gap: 15px; }
+    .logo i { font-size: 2.5rem; }
+    header h1 { color: var(--blanco); }
+    h2, h3 { margin-bottom: 15px; color: var(--azul-oscuro); }
+    .welcome-section { text-align: center; margin-bottom: 40px; }
+    .welcome-text { max-width: 800px; margin: 0 auto; font-size: 18px; color: var(--gris-oscuro); }
+    .role-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-bottom: 40px; }
+    .role-card { background-color: var(--blanco); border-radius: 12px; padding: 30px; text-align: center; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; width: 320px; display: flex; flex-direction: column; align-items: center; }
+    .role-card:hover { transform: translateY(-10px); box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15); }
+    .role-icon { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 2.5rem; }
+    .ciudadano .role-icon { background-color: rgba(51, 153, 204, 0.2); color: var(--azul-claro); }
+    .funcionario .role-icon { background-color: rgba(0, 51, 102, 0.2); color: var(--azul-oscuro); }
+    .administrador .role-icon { background-color: rgba(204, 51, 51, 0.2); color: var(--rojo); }
+    .role-card h3 { font-size: 1.5rem; margin-bottom: 15px; }
+    .role-description { color: var(--gris-oscuro); margin-bottom: 25px; flex-grow: 1; }
+    .btn { display: inline-block; padding: 12px 30px; background-color: var(--azul-claro); color: var(--blanco); border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 16px; transition: all 0.3s; font-weight: 600; }
+    .btn-primary { background-color: var(--azul-oscuro); }
+    .btn-primary:hover { background-color: var(--azul-claro); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+    .btn-ciudadano { background-color: var(--azul-claro); }
+    .btn-funcionario { background-color: var(--azul-oscuro); }
+    .btn-administrador { background-color: var(--rojo); }
+    .btn-ciudadano:hover, .btn-funcionario:hover, .btn-administrador:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+    .info-section { background-color: var(--azul-oscuro); color: var(--blanco); padding: 40px; border-radius: 12px; margin-top: 40px; text-align: center; }
+    .info-section h2 { color: var(--blanco); margin-bottom: 20px; }
+    .info-section p { max-width: 800px; margin: 0 auto 25px; font-size: 18px; }
+    footer { text-align: center; padding: 25px; color: var(--gris-oscuro); border-top: 1px solid var(--gris-medio); background-color: var(--blanco); margin-top: auto; }
+    @media (max-width: 768px) {
+      .role-cards { flex-direction: column; align-items: center; }
+      .role-card { width: 100%; max-width: 400px; }
+      .welcome-text { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">
+        <i class="fas fa-city fa-2x"></i>
+        <h1>Ruta Sin Obstáculos</h1>
+      </div>
+      <p>Ruta Sin Obstáculos - Sistema de Reporte de Invasión al Espacio Público</p>
+    </div>
+  </header>
+  
+  <div class="container">
+    <div class="welcome-section">
+      <h2>Bienvenido al Sistema de Reporte Ciudadano</h2>
+      <p class="welcome-text">Seleccione su rol para acceder al sistema. Esta plataforma permite reportar y gestionar invasiones al espacio público en el municipio de Pasto, contribuyendo a una ciudad más ordenada y segura para todos.</p>
+    </div>
+    
+    <div class="role-cards">
+      <div class="role-card ciudadano">
+        <div class="role-icon"><i class="fas fa-user"></i></div>
+        <h3>Ciudadano</h3>
+        <p class="role-description">Acceso para ciudadanos que desean reportar invasiones al espacio público de forma anónima y consultar el estado de sus reportes.</p>
+        <button class="btn btn-ciudadano" onclick="seleccionarRol('ciudadano')">
+          <i class="fas fa-sign-in-alt"></i> Acceder como Ciudadano
+        </button>
+      </div>
+      
+      <div class="role-card funcionario">
+        <div class="role-icon"><i class="fas fa-user-tie"></i></div>
+        <h3>Funcionario</h3>
+        <p class="role-description">Acceso para funcionarios municipales que gestionan y dan seguimiento a los reportes de invasión al espacio público.</p>
+        <button class="btn btn-funcionario" onclick="seleccionarRol('funcionario')">
+          <i class="fas fa-sign-in-alt"></i> Acceder como Funcionario
+        </button>
+      </div>
+      
+      <div class="role-card administrador">
+        <div class="role-icon"><i class="fas fa-user-cog"></i></div>
+        <h3>Administrador</h3>
+        <p class="role-description">Acceso para administradores del sistema con permisos para gestionar usuarios, zonas y generar reportes estadísticos.</p>
+        <button class="btn btn-administrador" onclick="seleccionarRol('administrador')">
+          <i class="fas fa-sign-in-alt"></i> Acceder como Administrador
+        </button>
+      </div>
+    </div>
+    
+    <div class="info-section">
+      <h2><i class="fas fa-info-circle"></i> ¿Por qué reportar invasiones al espacio público?</h2>
+      <p>El espacio público es de todos y debe mantenerse libre de obstáculos que impidan su uso y disfrute por parte de la comunidad. Tu reporte ayuda a las autoridades a identificar y resolver problemas que afectan la movilidad, seguridad y calidad de vida en nuestra ciudad.</p>
+      <button class="btn btn-primary">
+        <i class="fas fa-question-circle"></i> Más Información
+      </button>
+    </div>
+  </div>
+  
+  <footer>
+    <div class="container">
+      <p>Ruta Sin Obstáculos - Sistema de Reporte de Invasión al Espacio Público</p>
+      <p>© 2025 - Todos los derechos reservados</p>
+    </div>
+  </footer>
+
+  <script>
+    function seleccionarRol(rol) {
+      sessionStorage.setItem('rolSeleccionado', rol);
+      switch(rol) {
+        case 'ciudadano':
+          window.location.href = 'ciudadano/start.html';
+          break;
+        case 'funcionario':
+          window.location.href = 'funcionario/login.html';
+          break;
+        case 'administrador':
+          window.location.href = 'administrador/panel.html';
+          break;
+        default:
+          console.log('Rol no reconocido');
+      }
+    }
+  </script>
+  <script type="module">
+  import { supabase } from "./js/supabase.js";
+
+  async function testConexion() {
+    const { data, error } = await supabase.from("roles").select("*");
+    if (error) {
+      console.error("❌ Error conectando a Supabase:", error);
+    } else {
+      console.log("✅ Conectado a Supabase. Roles:", data);
+    }
+  }
+
+  testConexion();
+</script>
+</body>
+</html>
