@@ -220,90 +220,183 @@
     </div>
   </footer>
 
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      
-      // Validación básica
-      if (!username || !password) {
-        showAlert('Por favor, complete todos los campos', 'error');
-        return;
-      }
-      
-      // Aquí iría la lógica de autenticación con Supabase
-      authenticateAdmin(username, password);
-    });
+  <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  // Configuración de Supabase
+  const SUPABASE_URL = "https://okulnfrlydegkyujpssj.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o";
+  
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
     
-    document.getElementById('forgotPassword').addEventListener('click', function(e) {
-      e.preventDefault();
-      const username = document.getElementById('username').value;
-      
-      if (!username) {
-        showAlert('Por favor, ingrese su usuario para recuperar la contraseña', 'error');
-        document.getElementById('username').focus();
-        return;
-      }
-      
-      // Simulación de recuperación de contraseña
-      showAlert(`Se ha enviado un enlace de recuperación al correo asociado a ${username}`, 'success');
-    });
+    const email = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
     
-    function showAlert(message, type) {
-      const alertMessage = document.getElementById('alertMessage');
-      alertMessage.textContent = message;
-      alertMessage.className = 'alert';
-      alertMessage.classList.add(type === 'error' ? 'alert-error' : 'alert-success');
-      alertMessage.style.display = 'block';
-      
-      // Ocultar alerta después de 5 segundos
-      setTimeout(() => {
-        alertMessage.style.display = 'none';
-      }, 5000);
+    // Mostrar loading
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+    submitBtn.disabled = true;
+    
+    // Validación básica
+    if (!email || !password) {
+      showAlert('Por favor, complete todos los campos', 'error');
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+      return;
     }
     
-    // Función para autenticar con Supabase
-    async function authenticateAdmin(username, password) {
-      try {
-        // Importar supabase (asegúrate de que la ruta sea correcta)
-        const { supabase } = await import('../js/supabase.js');
-        
-        // Intentar autenticar al administrador
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: username,
-          password: password
-        });
-        
-        if (error) {
-          showAlert('Credenciales incorrectas. Intente nuevamente.', 'error');
-          console.error('Error de autenticación:', error);
+    // Autenticación con Supabase
+    await authenticateUser(email, password);
+    
+    // Restaurar botón
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
+  });
+  
+  document.getElementById('forgotPassword').addEventListener('click', function(e) {
+    e.preventDefault();
+    const email = document.getElementById('username').value;
+    
+    if (!email) {
+      showAlert('Por favor, ingrese su email para recuperar la contraseña', 'error');
+      document.getElementById('username').focus();
+      return;
+    }
+    
+    // Recuperación de contraseña con Supabase
+    recoverPassword(email);
+  });
+  
+  function showAlert(message, type) {
+    const alertMessage = document.getElementById('alertMessage');
+    alertMessage.textContent = message;
+    alertMessage.className = 'alert';
+    alertMessage.classList.add(type === 'error' ? 'alert-error' : 'alert-success');
+    alertMessage.style.display = 'block';
+    
+    // Ocultar alerta después de 5 segundos
+    setTimeout(() => {
+      alertMessage.style.display = 'none';
+    }, 5000);
+  }
+  
+  // Función para autenticar con Supabase
+  async function authenticateUser(email, password) {
+    try {
+      // Intentar autenticar al usuario
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+      
+      if (error) {
+        showAlert('Credenciales incorrectas. Intente nuevamente.', 'error');
+        console.error('Error de autenticación:', error);
+        return;
+      }
+      
+      // Si la autenticación es exitosa
+      showAlert('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
+      
+      // Verificar si es super admin o administrador
+      await checkUserRole(data.user);
+      
+    } catch (error) {
+      console.error('Error en la autenticación:', error);
+      showAlert('Error de conexión. Intente nuevamente.', 'error');
+    }
+  }
+
+  // Verificar rol del usuario
+  async function checkUserRole(user) {
+    try {
+      // Opción 1: Verificar si es super admin directamente
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (userData.user && userData.user.email === 'superadmin@rutasinobstaculos.com') {
+        // Es super admin, redirigir al panel
+        setTimeout(() => {
+          window.location.href = 'panel.html';
+        }, 1500);
+        return;
+      }
+
+      // Opción 2: Verificar en tabla de usuarios si existe
+      const { data: usuarioData, error: usuarioError } = await supabase
+        .from('usuarios')
+        .select('rol')
+        .eq('id', user.id)
+        .single();
+
+      if (!usuarioError && usuarioData) {
+        // Si existe tabla usuarios y tiene rol de administrador
+        if (usuarioData.rol === 'administrador') {
+          setTimeout(() => {
+            window.location.href = 'panel.html';
+          }, 1500);
           return;
-        }
-        
-        // Verificar si el usuario tiene rol de administrador
-        const { data: userData, error: userError } = await supabase
-          .from('usuarios')
-          .select('rol')
-          .eq('id', data.user.id)
-          .single();
-          
-        if (userError || !userData || userData.rol !== 'administrador') {
-          showAlert('No tiene permisos para acceder al panel de administración.', 'error');
-          // Cerrar sesión si no es administrador
+        } else {
+          showAlert('No tiene permisos de administrador.', 'error');
           await supabase.auth.signOut();
           return;
         }
-        
-        // Redirigir al panel de administración
-        window.location.href = 'panel.html';
-        
-      } catch (error) {
-        console.error('Error en la autenticación:', error);
-        showAlert('Error de conexión. Intente nuevamente.', 'error');
       }
+
+      // Opción 3: Si no existe tabla usuarios, permitir acceso a cualquier usuario autenticado
+      // (Para desarrollo - quitar en producción)
+      setTimeout(() => {
+        window.location.href = 'panel.html';
+      }, 1500);
+
+    } catch (error) {
+      console.error('Error verificando rol:', error);
+      // En caso de error, permitir acceso (para desarrollo)
+      setTimeout(() => {
+        window.location.href = 'panel.html';
+      }, 1500);
     }
-  </script>
+  }
+  
+  // Función para recuperar contraseña
+  async function recoverPassword(email) {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password.html`,
+      });
+      
+      if (error) {
+        showAlert('Error al enviar el enlace de recuperación', 'error');
+        console.error('Error recuperación:', error);
+        return;
+      }
+      
+      showAlert(`Se ha enviado un enlace de recuperación a ${email}`, 'success');
+      
+    } catch (error) {
+      console.error('Error en recuperación:', error);
+      showAlert('Error al procesar la solicitud', 'error');
+    }
+  }
+
+  // Verificar si ya hay una sesión activa
+  async function checkExistingSession() {
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        // Si ya está logueado, redirigir al panel
+        window.location.href = 'panel.html';
+      }
+    } catch (error) {
+      console.error('Error verificando sesión:', error);
+    }
+  }
+
+  // Ejecutar al cargar la página
+  checkExistingSession();
+</script>
 </body>
 </html>
