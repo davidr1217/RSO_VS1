@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Funcionario - Sistema de Reportes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="module" src="supabaseClient.js"></script>
+    <style>
+        :root {
+            --azul-oscuro: #003366;
+            --azul-claro: #3399CC;
+            --rojo: #CC3333;
+            --blanco: #FFFFFF;
+            --gris-claro: #F5F5F5;
+            --gris-medio: #DDDDDD;
+            --gris-oscuro: #666666;
+            --verde: #28a745;
+            --naranja: #fd7e14;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--gris-claro);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .admin-header {
+            background: linear-gradient(to right, var(--azul-oscuro), var(--azul-claro));
+            color: var(--blanco);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .admin-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--azul-claro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--blanco);
+        }
+        
+        .main-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            width: 100%;
+            padding: 0 20px;
+            gap: 20px;
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            border-radius: 10px;
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            height: fit-content;
+        }
+        
+        .admin-welcome {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--azul-claro);
+            margin-bottom: 15px;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background-color: var(--azul-claro);
+            border-left: 4px solid var(--rojo);
+        }
+        
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+        }
+        
+        .admin-content {
+            flex: 1;
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gris-medio);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(to bottom right, var(--azul-oscuro), var(--azul-claro));
+            color: var(--blanco);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-title {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .tasks-container {
+            margin-bottom: 30px;
+        }
+        
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .task-card {
+            background-color: var(--gris-claro);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--naranja);
+        }
+        
+        .task-card.resuelto {
+            border-left: 4px solid var(--verde);
+        }
+        
+        .task-card.vencido {
+            border-left: 4px solid var(--rojo);
+        }
+        
+        .task-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--azul-oscuro);
+        }
+        
+        .task-details {
+            color: var(--gris-oscuro);
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--gris-oscuro);
+        }
+        
+        .task-priority {
+            font-weight: bold;
+        }
+        
+        .task-priority.alta {
+            color: var(--rojo);
+        }
+        
+        .task-priority.media {
+            color: var(--naranja);
+        }
+        
+        .task-priority.baja {
+            color: var(--verde);
+        }
+        
+        .activity-container {
+            margin-top: 30px;
+        }
+        
+        .activity-header {
+            margin-bottom: 20px;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            border-bottom: 1px solid var(--gris-medio);
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--gris-claro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: var(--azul-oscuro);
+            flex-shrink: 0;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: var(--gris-oscuro);
+            margin-top: 5px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--azul-claro);
+            color: var(--blanco);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--azul-oscuro);
+        }
+        
+        .btn-primary {
+            background-color: var(--azul-oscuro);
+        }
+        
+        .btn-success {
+            background-color: var(--verde);
+        }
+        
+        .btn-danger {
+            background-color: var(--rojo);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .denuncias-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .denuncias-table th, .denuncias-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--gris-medio);
+        }
+        
+        .denuncias-table th {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+        }
+        
+        .denuncias-table tr:nth-child(even) {
+            background-color: var(--gris-claro);
+        }
+        
+        .estado-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .estado-pendiente {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+        
+        .estado-revision {
+            background-color: #CCE5FF;
+            color: #004085;
+        }
+        
+        .estado-resuelto {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .denuncias-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-city fa-2x"></i>
+                <h1>Panel de Funcionario</h1>
+            </div>
+            <div class="admin-actions">
+                <div class="admin-info">
+                    <div class="admin-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div id="userName">Usuario</div>
+                        <small id="userEmail">correo@ejemplo.com</small>
+                    </div>
+                </div>
+                <a href="#" class="btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="admin-sidebar">
+            <div class="admin-welcome">
+                <h3 id="welcomeName">Hola, Usuario</h3>
+                <p>Funcionario de Espacio Público</p>
+            </div>
+            <div class="menu-item active">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-flag"></i>
+                <span>Mis Casos</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-tasks"></i>
+                <span>Casos Asignados</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Mapa de Casos</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-user"></i>
+                <span>Mi Perfil</span>
+            </div>
+        </div>
+        
+        <div class="admin-content">
+            <div class="dashboard-header">
+                <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                <div id="currentDate">Cargando fecha...</div>
+            </div>
+            
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <i class="fas fa-list-alt fa-2x"></i>
+                    <div class="stat-number" id="totalCasos">0</div>
+                    <div class="stat-title">Casos Totales</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-clock fa-2x"></i>
+                    <div class="stat-number" id="pendientesCasos">0</div>
+                    <div class="stat-title">Pendientes</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-search fa-2x"></i>
+                    <div class="stat-number" id="revisionCasos">0</div>
+                    <div class="stat-title">En Revisión</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                    <div class="stat-number" id="resueltosCasos">0</div>
+                    <div class="stat-title">Resueltos</div>
+                </div>
+            </div>
+            
+            <div class="tasks-container">
+                <div class="tasks-header">
+                    <h3>Mis Tareas Prioritarias</h3>
+                    <a href="#" class="btn btn-sm" id="verTodasBtn">Ver todas</a>
+                </div>
+                <div id="tasksList">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando tareas...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="activity-container">
+                <div class="activity-header">
+                    <h3>Actividad Reciente</h3>
+                </div>
+                <div id="activityList">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando actividad...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tasks-container">
+                <div class="tasks-header">
+                    <h3>Mis Denuncias Asignadas</h3>
+                </div>
+                <div id="denunciasList">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando denuncias...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './supabaseClient.js';
+        
+        // Verificar autenticación
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userData = localStorage.getItem('user');
+            
+            if (!userData) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            const user = JSON.parse(userData);
+            
+            // Actualizar información del usuario en la interfaz
+            document.getElementById('userName').textContent = user.nombre;
+            document.getElementById('userEmail').textContent = user.correo;
+            document.getElementById('welcomeName').textContent = `Hola, ${user.nombre.split(' ')[0]}`;
+            document.getElementById('userAvatar').textContent = user.nombre.charAt(0);
+            
+            // Actualizar fecha actual
+            const now = new Date();
+            document.getElementById('currentDate').textContent = `Hoy: ${now.toLocaleDateString()}`;
+            
+            // Cargar datos del dashboard
+            await loadDashboardData(user.id);
+        });
+        
+        // Cargar datos del dashboard
+        async function loadDashboardData(userId) {
+            try {
+                // Obtener estadísticas de denuncias
+                const { data: denuncias, error: denunciasError } = await supabase
+                    .from('denuncias')
+                    .select('*')
+                    .eq('asignado_a', userId);
+                
+                if (denunciasError) throw denunciasError;
+                
+                // Calcular estadísticas
+                const total = denuncias.length;
+                const pendientes = denuncias.filter(d => d.estado === 'pendiente').length;
+                const enRevision = denuncias.filter(d => d.estado === 'en_revision').length;
+                const resueltos = denuncias.filter(d => d.estado === 'resuelto').length;
+                
+                // Actualizar estadísticas
+                document.getElementById('totalCasos').textContent = total;
+                document.getElementById('pendientesCasos').textContent = pendientes;
+                document.getElementById('revisionCasos').textContent = enRevision;
+                document.getElementById('resueltosCasos').textContent = resueltos;
+                
+                // Cargar tareas prioritarias (primeros 3 casos pendientes)
+                const tareasPendientes = denuncias
+                    .filter(d => d.estado === 'pendiente')
+                    .slice(0, 3);
+                
+                const tasksList = document.getElementById('tasksList');
+                tasksList.innerHTML = '';
+                
+                if (tareasPendientes.length === 0) {
+                    tasksList.innerHTML = '<p>No hay tareas pendientes</p>';
+                } else {
+                    tareasPendientes.forEach(tarea => {
+                        const taskElement = document.createElement('div');
+                        taskElement.className = 'task-card';
+                        taskElement.innerHTML = `
+                            <div class="task-title">Revisar caso ${tarea.id.substring(0, 8)} - ${tarea.categoria}</div>
+                            <div class="task-details">${tarea.descripcion.substring(0, 100)}...</div>
+                            <div class="task-meta">
+                                <span class="task-priority alta">Alta prioridad</span>
+                                <span>Asignado el ${new Date(tarea.creado_en).toLocaleDateString()}</span>
+                            </div>
+                        `;
+                        tasksList.appendChild(taskElement);
+                    });
+                }
+                
+                // Cargar actividad reciente desde la tabla seguimiento
+                const { data: seguimientos, error: segError } = await supabase
+                    .from('seguimiento')
+                    .select(`
+                        *,
+                        denuncias (categoria)
+                    `)
+                    .eq('funcionario_id', userId)
+                    .order('creado_en', { ascending: false })
+                    .limit(5);
+                
+                if (segError) throw segError;
+                
+                const activityList = document.getElementById('activityList');
+                activityList.innerHTML = '';
+                
+                if (seguimientos.length === 0) {
+                    activityList.innerHTML = '<p>No hay actividad reciente</p>';
+                } else {
+                    seguimientos.forEach(seg => {
+                        const activityElement = document.createElement('div');
+                        activityElement.className = 'activity-item';
+                        
+                        let icon = 'fa-sync-alt';
+                        let action = 'actualizado';
+                        
+                        if (seg.comentario && seg.comentario.includes('resuelto')) {
+                            icon = 'fa-check-circle';
+                            action = 'resuelto';
+                        } else if (seg.evidencia_url) {
+                            icon = 'fa-paperclip';
+                            action = 'agregado evidencia';
+                        }
+                        
+                        activityElement.innerHTML = `
+                            <div class="activity-icon">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>Has ${action} el caso <strong>${seg.denuncias.categoria}</strong></p>
+                                <p><small>${seg.comentario || 'Sin comentarios'}</small></p>
+                                <div class="activity-time">${new Date(seg.creado_en).toLocaleString()}</div>
+                            </div>
+                        `;
+                        activityList.appendChild(activityElement);
+                    });
+                }
+                
+                // Cargar lista de denuncias asignadas
+                const denunciasList = document.getElementById('denunciasList');
+                denunciasList.innerHTML = '';
+                
+                if (denuncias.length === 0) {
+                    denunciasList.innerHTML = '<p>No tienes denuncias asignadas</p>';
+                } else {
+                    const table = document.createElement('table');
+                    table.className = 'denuncias-table';
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Categoría</th>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${denuncias.map(denuncia => `
+                                <tr>
+                                    <td>${denuncia.id.substring(0, 8)}</td>
+                                    <td>${denuncia.categoria}</td>
+                                    <td>${denuncia.descripcion.substring(0, 50)}...</td>
+                                    <td>
+                                        <span class="estado-badge estado-${denuncia.estado}">
+                                            ${denuncia.estado.replace('_', ' ')}
+                                        </span>
+                                    </td>
+                                    <td>${new Date(denuncia.creado_en).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    `;
+                    denunciasList.appendChild(table);
+                }
+                
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                alert('Error al cargar los datos del dashboard');
+            }
+        }
+        
+        // Cerrar sesión
+        document.getElementById('logoutBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        });
+        
+        // Ver todas las tareas
+        document.getElementById('verTodasBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Funcionalidad de ver todas las tareas en desarrollo');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio de Sesión - Funcionario - Ruta Sin Obstáculos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --azul-oscuro: #002244;
+      --azul-claro: #3399CC;
+      --rojo: #CC3333;
+      --blanco: #FFFFFF;
+      --gris-claro: #F5F5F5;
+      --gris-medio: #DDDDDD;
+      --gris-oscuro: #666666;
+      --verde: #28a745;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { 
+      background-color: var(--blanco); 
+      color: #333; 
+      line-height: 1.6; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+    .container { 
+      max-width: 500px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      flex: 1; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    header {
+      background-color: var(--azul-oscuro);
+      color: var(--blanco);
+      padding: 20px 0;
+      text-align: center;
+      border-bottom: 5px solid var(--azul-claro);
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .logo { display: flex; align-items: center; justify-content: center; gap: 15px; }
+    .logo i { font-size: 2.5rem; }
+    header h1 { color: var(--blanco); }
+    .login-card {
+      background-color: var(--blanco);
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      text-align: center;
+      border: 1px solid var(--gris-medio);
+    }
+    .login-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 2.5rem;
+      background-color: rgba(51, 153, 204, 0.2);
+      color: var(--azul-claro);
+    }
+    .login-card h2 {
+      color: var(--azul-oscuro);
+      margin-bottom: 10px;
+    }
+    .login-card p {
+      color: var(--gris-oscuro);
+      margin-bottom: 30px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--azul-oscuro);
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--gris-medio);
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--azul-claro);
+      box-shadow: 0 0 0 3px rgba(51, 153, 204, 0.2);
+    }
+    .btn { 
+      display: inline-block; 
+      padding: 12px 30px; 
+      background-color: var(--azul-claro); 
+      color: var(--blanco); 
+      border: none; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      text-decoration: none; 
+      font-size: 16px; 
+      transition: all 0.3s; 
+      font-weight: 600; 
+      width: 100%;
+    }
+    .btn:hover { 
+      background-color: var(--azul-oscuro); 
+      transform: translateY(-2px); 
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: var(--azul-claro);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .forgot-password {
+      display: block;
+      text-align: right;
+      margin-top: 10px;
+      color: var(--azul-claro);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .forgot-password:hover {
+      text-decoration: underline;
+    }
+    .alert {
+      padding: 12px 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .alert-error {
+      background-color: rgba(204, 51, 51, 0.1);
+      border: 1px solid var(--rojo);
+      color: var(--rojo);
+    }
+    .alert-success {
+      background-color: rgba(51, 153, 204, 0.1);
+      border: 1px solid var(--azul-claro);
+      color: var(--azul-oscuro);
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 10px;
+    }
+    footer { 
+      text-align: center; 
+      padding: 25px; 
+      color: var(--gris-oscuro); 
+      border-top: 1px solid var(--gris-medio); 
+      background-color: var(--blanco); 
+      margin-top: auto; 
+    }
+    @media (max-width: 768px) {
+      .container { padding: 15px; }
+      .login-card { padding: 30px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">
+        <i class="fas fa-city fa-2x"></i>
+        <h1>Ruta Sin Obstáculos</h1>
+      </div>
+      <p>Panel de Funcionario - Sistema de Reporte de Invasión al Espacio Público</p>
+    </div>
+  </header>
+  
+  <div class="container">
+    <div class="login-card">
+      <div class="login-icon">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <h2>Inicio de Sesión - Funcionario</h2>
+      <p>Ingrese sus credenciales para acceder al panel de funcionario</p>
+      
+      <div id="alertMessage" class="alert"></div>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email"><i class="fas fa-envelope"></i> Correo Electrónico</label>
+          <input type="email" id="email" class="form-control" placeholder="funcionario@alcaldia.gov.co" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
+          <input type="password" id="password" class="form-control" placeholder="Ingrese su contraseña" required>
+          <a href="#" class="forgot-password" id="forgotPassword">
+            <i class="fas fa-key"></i> ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+        
+        <button type="submit" class="btn">
+          <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+        </button>
+        
+        <div class="loading" id="loading">
+          <i class="fas fa-spinner fa-spin"></i> Verificando credenciales...
+        </div>
+      </form>
+      
+      <a href="../index.html" class="back-link">
+        <i class="fas fa-arrow-left"></i> Volver a la selección de roles
+      </a>
+    </div>
+  </div>
+  
+  <footer>
+    <div class="container">
+      <p>Ruta Sin Obstáculos - Sistema de Reporte de Invasión al Espacio Público</p>
+      <p>© 2025 - Todos los derechos reservados</p>
+    </div>
+  </footer>
+
+  <script>
+    // Configuración de Supabase
+    const SUPABASE_URL = 'https://okulnfrlydegkyujpssj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const loading = document.getElementById('loading');
+      
+      // Validación básica
+      if (!email || !password) {
+        showAlert('Por favor, complete todos los campos', 'error');
+        return;
+      }
+      
+      // Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showAlert('Por favor, ingrese un correo electrónico válido', 'error');
+        return;
+      }
+      
+      // Mostrar loading
+      loading.style.display = 'block';
+      
+      // Autenticar funcionario - NUEVO MÉTODO
+      await authenticateFuncionarioDirecto(email, password);
+    });
+    
+    document.getElementById('forgotPassword').addEventListener('click', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      
+      if (!email) {
+        showAlert('Por favor, ingrese su correo electrónico para recuperar la contraseña', 'error');
+        document.getElementById('email').focus();
+        return;
+      }
+      
+      // Simulación de recuperación de contraseña
+      showAlert(`Se ha enviado un enlace de recuperación a ${email}`, 'success');
+    });
+    
+    function showAlert(message, type) {
+      const alertMessage = document.getElementById('alertMessage');
+      alertMessage.textContent = message;
+      alertMessage.className = 'alert';
+      alertMessage.classList.add(type === 'error' ? 'alert-error' : 'alert-success');
+      alertMessage.style.display = 'block';
+      
+      // Ocultar alerta después de 5 segundos
+      setTimeout(() => {
+        alertMessage.style.display = 'none';
+      }, 5000);
+    }
+    
+    // NUEVA FUNCIÓN: Autenticación directa con la tabla usuarios
+    async function authenticateFuncionarioDirecto(email, password) {
+      try {
+        const loading = document.getElementById('loading');
+        
+        console.log('🔐 Intentando autenticar:', email);
+        
+        // 1. Buscar usuario en la tabla usuarios
+        const { data: usuarios, error } = await supabase
+          .from('usuarios')
+          .select(`
+            id,
+            nombre,
+            correo,
+            contrasena,
+            cargo,
+            activo,
+            roles(nombre)
+          `)
+          .eq('correo', email)
+          .eq('activo', true)
+          .single();
+
+        console.log('📋 Resultado consulta:', usuarios);
+        console.log('❌ Error consulta:', error);
+
+        if (error || !usuarios) {
+          showAlert('Credenciales incorrectas. Intente nuevamente.', 'error');
+          loading.style.display = 'none';
+          return;
+        }
+
+        // 2. Verificar contraseña (comparación directa)
+        if (usuarios.contrasena !== password) {
+          showAlert('Credenciales incorrectas. Intente nuevamente.', 'error');
+          loading.style.display = 'none';
+          return;
+        }
+
+        // 3. Verificar que sea Funcionario
+        const rolNombre = usuarios.roles?.nombre;
+        console.log('👤 Rol del usuario:', rolNombre);
+        
+        if (rolNombre !== 'Funcionario') {
+          showAlert('No tiene permisos para acceder al panel de funcionario.', 'error');
+          loading.style.display = 'none';
+          return;
+        }
+
+        // 4. Login exitoso - Guardar en localStorage
+        localStorage.setItem('funcionario', JSON.stringify({
+          id: usuarios.id,
+          nombre: usuarios.nombre,
+          correo: usuarios.correo,
+          cargo: usuarios.cargo,
+          rol: rolNombre,
+          loginTime: new Date().toISOString()
+        }));
+
+        console.log('✅ Login exitoso, redirigiendo...');
+        showAlert('Inicio de sesión exitoso. Redirigiendo...', 'success');
+
+        // 5. Redirigir al panel de funcionario
+        setTimeout(() => {
+          window.location.href = 'funcionarios.html';
+        }, 1500);
+
+      } catch (error) {
+        console.error('❌ Error en autenticación:', error);
+        showAlert('Error de conexión. Intente nuevamente.', 'error');
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+    
+    // Verificar si ya hay una sesión activa - NUEVO MÉTODO
+    document.addEventListener('DOMContentLoaded', async function() {
+      const funcionarioData = localStorage.getItem('funcionario');
+      
+      if (funcionarioData) {
+        try {
+          const funcionario = JSON.parse(funcionarioData);
+          
+          // Verificar que la sesión no sea muy antigua (opcional)
+          const loginTime = new Date(funcionario.loginTime);
+          const now = new Date();
+          const diffHours = (now - loginTime) / (1000 * 60 * 60);
+          
+          // Si la sesión tiene menos de 24 horas, redirigir automáticamente
+          if (diffHours < 24) {
+            console.log('🔄 Sesión activa encontrada, redirigiendo...');
+            window.location.href = 'funcionarios.html';
+          } else {
+            // Sesión expirada, limpiar localStorage
+            localStorage.removeItem('funcionario');
+          }
+        } catch (e) {
+          // Error al parsear, limpiar localStorage
+          localStorage.removeItem('funcionario');
+        }
+      }
+    });
+
+    // Función para probar la conexión (opcional, para debugging)
+    async function testConexion() {
+      try {
+        const { data, error } = await supabase
+          .from('usuarios')
+          .select('count')
+          .limit(1);
+        
+        if (error) throw error;
+        console.log('✅ Conexión a Supabase: OK');
+        return true;
+      } catch (error) {
+        console.error('❌ Error de conexión:', error);
+        return false;
+      }
+    }
+
+    // Probar conexión al cargar
+    testConexion().then(result => {
+      console.log('🔗 Estado conexión:', result ? '✅ Conectado' : '❌ Error');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro - Funcionario - Ruta Sin Obstáculos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --azul-oscuro: #002244;
+      --azul-claro: #3399CC;
+      --rojo: #CC3333;
+      --blanco: #FFFFFF;
+      --gris-claro: #F5F5F5;
+      --gris-medio: #DDDDDD;
+      --gris-oscuro: #666666;
+      --verde: #28a745;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { 
+      background-color: var(--blanco); 
+      color: #333; 
+      line-height: 1.6; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+    .container { 
+      max-width: 600px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      flex: 1; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    header {
+      background-color: var(--azul-oscuro);
+      color: var(--blanco);
+      padding: 20px 0;
+      text-align: center;
+      border-bottom: 5px solid var(--azul-claro);
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .logo { display: flex; align-items: center; justify-content: center; gap: 15px; }
+    .logo i { font-size: 2.5rem; }
+    header h1 { color: var(--blanco); }
+    .register-card {
+      background-color: var(--blanco);
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      text-align: center;
+      border: 1px solid var(--gris-medio);
+    }
+    .register-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 2.5rem;
+      background-color: rgba(51, 153, 204, 0.2);
+      color: var(--azul-claro);
+    }
+    .register-card h2 {
+      color: var(--azul-oscuro);
+      margin-bottom: 10px;
+    }
+    .register-card p {
+      color: var(--gris-oscuro);
+      margin-bottom: 30px;
+    }
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+      flex: 1;
+    }
+    .form-group.full-width {
+      flex: 0 0 100%;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--azul-oscuro);
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--gris-medio);
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--azul-claro);
+      box-shadow: 0 0 0 3px rgba(51, 153, 204, 0.2);
+    }
+    .password-strength {
+      margin-top: 5px;
+      height: 4px;
+      border-radius: 2px;
+      background-color: var(--gris-medio);
+      overflow: hidden;
+    }
+    .password-strength-bar {
+      height: 100%;
+      width: 0%;
+      transition: all 0.3s;
+    }
+    .password-strength.weak .password-strength-bar {
+      background-color: var(--rojo);
+      width: 33%;
+    }
+    .password-strength.medium .password-strength-bar {
+      background-color: #fd7e14;
+      width: 66%;
+    }
+    .password-strength.strong .password-strength-bar {
+      background-color: var(--verde);
+      width: 100%;
+    }
+    .password-requirements {
+      font-size: 12px;
+      color: var(--gris-oscuro);
+      margin-top: 5px;
+    }
+    .requirement {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 2px;
+    }
+    .requirement.met {
+      color: var(--verde);
+    }
+    .requirement.unmet {
+      color: var(--gris-oscuro);
+    }
+    .btn { 
+      display: inline-block; 
+      padding: 12px 30px; 
+      background-color: var(--azul-claro); 
+      color: var(--blanco); 
+      border: none; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      text-decoration: none; 
+      font-size: 16px; 
+      transition: all 0.3s; 
+      font-weight: 600; 
+      width: 100%;
+    }
+    .btn:hover { 
+      background-color: var(--azul-oscuro); 
+      transform: translateY(-2px); 
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    }
+    .btn-success {
+      background-color: var(--verde);
+    }
+    .btn-success:hover {
+      background-color: #218838;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: var(--azul-claro);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .alert {
+      padding: 12px 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .alert-error {
+      background-color: rgba(204, 51, 51, 0.1);
+      border: 1px solid var(--rojo);
+      color: var(--rojo);
+    }
+    .alert-success {
+      background-color: rgba(51, 153, 204, 0.1);
+      border: 1px solid var(--azul-claro);
+      color: var(--azul-oscuro);
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .terms-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .terms-check input {
+      margin-top: 3px;
+    }
+    .terms-check label {
+      font-size: 14px;
+      color: var(--gris-oscuro);
+    }
+    .terms-link {
+      color: var(--azul-claro);
+      text-decoration: none;
+    }
+    .terms-link:hover {
+      text-decoration: underline;
+    }
+    footer { 
+      text-align: center; 
+      padding: 25px; 
+      color: var(--gris-oscuro); 
+      border-top: 1px solid var(--gris-medio); 
+      background-color: var(--blanco); 
+      margin-top: auto; 
+    }
+    @media (max-width: 768px) {
+      .container { padding: 15px; }
+      .register-card { padding: 30px 20px; }
+      .form-row { flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">
+        <i class="fas fa-city fa-2x"></i>
+        <h1>Ruta Sin Obstáculos</h1>
+      </div>
+      <p>Registro de Funcionario - Sistema de Reporte de Invasión al Espacio Público</p>
+    </div>
+  </header>
+  
+  <div class="container">
+    <div class="register-card">
+      <div class="register-icon">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h2>Registro de Funcionario</h2>
+      <p>Complete el formulario para crear su cuenta de funcionario</p>
+      
+      <div id="alertMessage" class="alert"></div>
+      
+      <form id="registerForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nombre"><i class="fas fa-user"></i> Nombre</label>
+            <input type="text" id="nombre" class="form-control" placeholder="Ingrese su nombre" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="apellido"><i class="fas fa-user"></i> Apellido</label>
+            <input type="text" id="apellido" class="form-control" placeholder="Ingrese su apellido" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="email"><i class="fas fa-envelope"></i> Correo Institucional</label>
+          <input type="email" id="email" class="form-control" placeholder="funcionario@alcaldia.gov.co" required>
+          <small style="color: var(--gris-oscuro);">Debe usar su correo institucional de la alcaldía</small>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
+            <input type="password" id="password" class="form-control" placeholder="Cree una contraseña" required>
+            <div id="passwordStrength" class="password-strength">
+              <div class="password-strength-bar"></div>
+            </div>
+            <div id="passwordRequirements" class="password-requirements">
+              <div class="requirement unmet" id="reqLength">
+                <i class="fas fa-circle" style="font-size: 8px;"></i>
+                Mínimo 8 caracteres
+              </div>
+              <div class="requirement unmet" id="reqUpper">
+                <i class="fas fa-circle" style="font-size: 8px;"></i>
+                Una letra mayúscula
+              </div>
+              <div class="requirement unmet" id="reqNumber">
+                <i class="fas fa-circle" style="font-size: 8px;"></i>
+                Un número
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="confirmPassword"><i class="fas fa-lock"></i> Confirmar Contraseña</label>
+            <input type="password" id="confirmPassword" class="form-control" placeholder="Repita la contraseña" required>
+            <div id="passwordMatch" class="password-requirements" style="display: none;">
+              <div class="requirement unmet" id="matchStatus">
+                <i class="fas fa-circle" style="font-size: 8px;"></i>
+                Las contraseñas no coinciden
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="cargo"><i class="fas fa-briefcase"></i> Cargo</label>
+          <input type="text" id="cargo" class="form-control" placeholder="Ej: Inspector de Espacio Público" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="departamento"><i class="fas fa-building"></i> Departamento/Área</label>
+          <select id="departamento" class="form-control" required>
+            <option value="">Seleccione un departamento</option>
+            <option value="Espacio Público">Espacio Público</option>
+            <option value="Seguridad Ciudadana">Seguridad Ciudadana</option>
+            <option value="Planeación Urbana">Planeación Urbana</option>
+            <option value="Movilidad">Movilidad</option>
+            <option value="Medio Ambiente">Medio Ambiente</option>
+            <option value="Otros">Otros</option>
+          </select>
+        </div>
+        
+        <div class="terms-check">
+          <input type="checkbox" id="terms" required>
+          <label for="terms">
+            Acepto los <a href="#" class="terms-link">términos y condiciones</a> y la 
+            <a href="#" class="terms-link">política de privacidad</a> del sistema
+          </label>
+        </div>
+        
+        <button type="submit" class="btn btn-success">
+          <i class="fas fa-user-plus"></i> Registrar Cuenta
+        </button>
+        
+        <div class="loading" id="loading">
+          <i class="fas fa-spinner fa-spin"></i> Creando cuenta...
+        </div>
+      </form>
+      
+      <a href="login.html" class="back-link">
+        <i class="fas fa-arrow-left"></i> Volver al inicio de sesión
+      </a>
+    </div>
+  </div>
+  
+  <footer>
+    <div class="container">
+      <p>Ruta Sin Obstáculos - Sistema de Reporte de Invasión al Espacio Público</p>
+      <p>© 2025 - Todos los derechos reservados</p>
+    </div>
+  </footer>
+
+  <script>
+    // Configuración de Supabase
+    const SUPABASE_URL = 'https://okulnfrlydegkyujpssj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Elementos del DOM
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const passwordStrength = document.getElementById('passwordStrength');
+    const passwordMatch = document.getElementById('passwordMatch');
+    
+    // Validación de fortaleza de contraseña
+    passwordInput.addEventListener('input', function() {
+      const password = this.value;
+      checkPasswordStrength(password);
+    });
+    
+    // Validación de coincidencia de contraseñas
+    confirmPasswordInput.addEventListener('input', function() {
+      checkPasswordMatch();
+    });
+    
+    function checkPasswordStrength(password) {
+      let strength = 0;
+      const requirements = {
+        length: password.length >= 8,
+        upper: /[A-Z]/.test(password),
+        number: /[0-9]/.test(password)
+      };
+      
+      // Actualizar indicadores visuales
+      document.getElementById('reqLength').className = requirements.length ? 
+        'requirement met' : 'requirement unmet';
+      document.getElementById('reqUpper').className = requirements.upper ? 
+        'requirement met' : 'requirement unmet';
+      document.getElementById('reqNumber').className = requirements.number ? 
+        'requirement met' : 'requirement unmet';
+      
+      // Calcular fortaleza
+      if (requirements.length) strength++;
+      if (requirements.upper) strength++;
+      if (requirements.number) strength++;
+      
+      // Actualizar barra de fortaleza
+      passwordStrength.className = 'password-strength';
+      if (strength === 1) {
+        passwordStrength.classList.add('weak');
+      } else if (strength === 2) {
+        passwordStrength.classList.add('medium');
+      } else if (strength === 3) {
+        passwordStrength.classList.add('strong');
+      }
+    }
+    
+    function checkPasswordMatch() {
+      const password = passwordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+      
+      if (confirmPassword === '') {
+        passwordMatch.style.display = 'none';
+        return;
+      }
+      
+      passwordMatch.style.display = 'block';
+      const matchStatus = document.getElementById('matchStatus');
+      
+      if (password === confirmPassword) {
+        matchStatus.className = 'requirement met';
+        matchStatus.innerHTML = '<i class="fas fa-check-circle" style="font-size: 8px;"></i> Las contraseñas coinciden';
+      } else {
+        matchStatus.className = 'requirement unmet';
+        matchStatus.innerHTML = '<i class="fas fa-times-circle" style="font-size: 8px;"></i> Las contraseñas no coinciden';
+      }
+    }
+    
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const nombre = document.getElementById('nombre').value;
+      const apellido = document.getElementById('apellido').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const cargo = document.getElementById('cargo').value;
+      const departamento = document.getElementById('departamento').value;
+      const terms = document.getElementById('terms').checked;
+      const loading = document.getElementById('loading');
+      
+      // Validaciones
+      if (!validateForm(nombre, apellido, email, password, confirmPassword, cargo, departamento, terms)) {
+        return;
+      }
+      
+      // Mostrar loading
+      loading.style.display = 'block';
+      
+      // Registrar funcionario
+      await registerFuncionario(nombre, apellido, email, password, cargo, departamento);
+    });
+    
+    function validateForm(nombre, apellido, email, password, confirmPassword, cargo, departamento, terms) {
+      // Validar campos obligatorios
+      if (!nombre || !apellido || !email || !password || !confirmPassword || !cargo || !departamento) {
+        showAlert('Por favor, complete todos los campos obligatorios', 'error');
+        return false;
+      }
+      
+      // Validar términos y condiciones
+      if (!terms) {
+        showAlert('Debe aceptar los términos y condiciones para continuar', 'error');
+        return false;
+      }
+      
+      // Validar correo institucional
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showAlert('Por favor, ingrese un correo electrónico válido', 'error');
+        return false;
+      }
+      
+      // Validar que sea correo institucional
+      if (!email.includes('@alcaldia') && !email.includes('@gobierno')) {
+        showAlert('Debe usar su correo institucional de la alcaldía', 'error');
+        return false;
+      }
+      
+      // Validar fortaleza de contraseña
+      if (password.length < 8) {
+        showAlert('La contraseña debe tener al menos 8 caracteres', 'error');
+        return false;
+      }
+      
+      if (!/[A-Z]/.test(password)) {
+        showAlert('La contraseña debe contener al menos una letra mayúscula', 'error');
+        return false;
+      }
+      
+      if (!/[0-9]/.test(password)) {
+        showAlert('La contraseña debe contener al menos un número', 'error');
+        return false;
+      }
+      
+      // Validar coincidencia de contraseñas
+      if (password !== confirmPassword) {
+        showAlert('Las contraseñas no coinciden', 'error');
+        return false;
+      }
+      
+      return true;
+    }
+    
+    function showAlert(message, type) {
+      const alertMessage = document.getElementById('alertMessage');
+      alertMessage.textContent = message;
+      alertMessage.className = 'alert';
+      alertMessage.classList.add(type === 'error' ? 'alert-error' : 'alert-success');
+      alertMessage.style.display = 'block';
+      
+      // Ocultar alerta después de 5 segundos
+      setTimeout(() => {
+        alertMessage.style.display = 'none';
+      }, 5000);
+    }
+    
+    // Función para registrar funcionario adaptada a la nueva BD
+    async function registerFuncionario(nombre, apellido, email, password, cargo, departamento) {
+      try {
+        const loading = document.getElementById('loading');
+        const nombreCompleto = `${nombre} ${apellido}`;
+        
+        // 1. Obtener el ID del rol "Funcionario" de la tabla roles
+        const { data: rolesData, error: rolesError } = await supabase
+          .from('roles')
+          .select('id')
+          .eq('nombre', 'Funcionario')
+          .single();
+        
+        if (rolesError || !rolesData) {
+          showAlert('Error: No se pudo encontrar el rol de funcionario en el sistema', 'error');
+          loading.style.display = 'none';
+          return;
+        }
+        
+        const rolId = rolesData.id;
+        
+        // 2. Registrar usuario en Auth de Supabase
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: {
+              nombre: nombreCompleto,
+              cargo: cargo,
+              departamento: departamento,
+              rol: 'funcionario'
+            }
+          }
+        });
+        
+        if (authError) {
+          if (authError.message.includes('already registered')) {
+            showAlert('Este correo electrónico ya está registrado', 'error');
+          } else {
+            showAlert('Error al crear la cuenta: ' + authError.message, 'error');
+          }
+          loading.style.display = 'none';
+          return;
+        }
+        
+        // 3. Insertar en la tabla usuarios con la nueva estructura
+        const { data: userData, error: userError } = await supabase
+          .from('usuarios')
+          .insert([
+            {
+              nombre: nombreCompleto,
+              correo: email,
+              contrasena: password, // En un sistema real, esto debería estar hasheado
+              rol_id: rolId,
+              cargo: cargo,
+              activo: true
+            }
+          ])
+          .select();
+        
+        if (userError) {
+          showAlert('Error al registrar en el sistema: ' + userError.message, 'error');
+          console.error('Error detallado:', userError);
+          loading.style.display = 'none';
+          return;
+        }
+        
+        showAlert('Cuenta creada exitosamente. Será redirigido al inicio de sesión.', 'success');
+        
+        // Redirigir al login después de 3 segundos
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 3000);
+        
+      } catch (error) {
+        console.error('Error en el registro:', error);
+        showAlert('Error inesperado. Por favor, intente nuevamente.', 'error');
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+    
+    // Enlace a términos y condiciones (simulado)
+    document.querySelectorAll('.terms-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Aquí se mostrarían los términos y condiciones del sistema');
+      });
+    });
+
+    // Verificar si ya hay una sesión activa
+    document.addEventListener('DOMContentLoaded', async function() {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // Verificar si el usuario ya está registrado en la tabla usuarios
+        const { data: userData } = await supabase
+          .from('usuarios')
+          .select('*')
+          .eq('correo', session.user.email)
+          .single();
+          
+        if (userData) {
+          // Redirigir automáticamente al dashboard
+          window.location.href = 'funcionarios.html';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
