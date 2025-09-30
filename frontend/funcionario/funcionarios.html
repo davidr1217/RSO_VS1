@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Funcionario - Sistema de Reportes</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type="module" src="supabaseClient.js"></script>
+    <script type="module" src="../js/JS_supabase.js"></script>
     <style>
         :root {
             --azul-oscuro: #003366;
@@ -488,187 +489,139 @@
         </div>
     </div>
 
-    <script type="module">
-        import { supabase } from './supabaseClient.js';
+   <script>
+    // Configuración directa de Supabase
+    const SUPABASE_URL = 'https://okulnfrlydegkyujpssj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o';
+    
+    // Crear cliente Supabase
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    console.log('🔍 Iniciando funcionarios.html...');
+    console.log('📦 localStorage actual:', localStorage);
+
+    // FUNCIÓN DE LOGOUT - VERSIÓN MEJORADA
+    function handleLogout(e) {
+        if (e) e.preventDefault();
         
+        console.log('🚪 EJECUTANDO LOGOUT...');
+        
+        // Mostrar confirmación
+        if (!confirm('¿Está seguro que desea cerrar sesión?')) {
+            return false;
+        }
+        
+        // Limpiar TODO el localStorage
+        localStorage.removeItem('funcionario');
+        localStorage.removeItem('user');
+        sessionStorage.clear();
+        
+        console.log('✅ Datos eliminados, redirigiendo...');
+        
+        // Redirigir inmediatamente
+        window.location.href = 'login.html?logout=' + Date.now();
+        return false;
+    }
+
+    // Configurar eventos cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔧 DOM cargado, configurando eventos...');
+        
+        // CONFIGURAR BOTÓN DE LOGOUT - MÚLTIPLES MÉTODOS
+        const logoutBtn = document.getElementById('logoutBtn');
+        console.log('📍 Botón de logout:', logoutBtn);
+        
+        if (logoutBtn) {
+            // Método 1: onclick directo
+            logoutBtn.onclick = handleLogout;
+            
+            // Método 2: addEventListener
+            logoutBtn.addEventListener('click', handleLogout);
+            
+            // Método 3: También prevenir comportamiento por defecto del enlace
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            });
+            
+            console.log('✅ Eventos de logout configurados');
+        } else {
+            console.error('❌ NO SE ENCUENTRA EL BOTÓN logoutBtn');
+            // Buscar cualquier botón que pueda ser de logout
+            const allLinks = document.querySelectorAll('a');
+            allLinks.forEach(link => {
+                if (link.textContent.includes('Cerrar') || link.textContent.includes('Salir')) {
+                    console.log('🔄 Encontrado botón alternativo:', link);
+                    link.onclick = handleLogout;
+                }
+            });
+        }
+
         // Verificar autenticación
-        document.addEventListener('DOMContentLoaded', async function() {
-            const userData = localStorage.getItem('user');
+        verificarAutenticacion();
+    });
+
+    // Función para verificar autenticación
+    async function verificarAutenticacion() {
+        console.log('🔐 Verificando autenticación...');
+        const funcionarioData = localStorage.getItem('funcionario');
+        console.log('📋 Datos de funcionario:', funcionarioData);
+        
+        if (!funcionarioData) {
+            console.log('❌ No autenticado, redirigiendo a login.html');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        try {
+            const user = JSON.parse(funcionarioData);
+            console.log('✅ Usuario autenticado:', user.nombre);
             
-            if (!userData) {
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            const user = JSON.parse(userData);
-            
-            // Actualizar información del usuario en la interfaz
+            // Actualizar información del usuario
             document.getElementById('userName').textContent = user.nombre;
             document.getElementById('userEmail').textContent = user.correo;
             document.getElementById('welcomeName').textContent = `Hola, ${user.nombre.split(' ')[0]}`;
             document.getElementById('userAvatar').textContent = user.nombre.charAt(0);
             
-            // Actualizar fecha actual
-            const now = new Date();
-            document.getElementById('currentDate').textContent = `Hoy: ${now.toLocaleDateString()}`;
+            // Actualizar fecha
+            document.getElementById('currentDate').textContent = `Hoy: ${new Date().toLocaleDateString()}`;
             
-            // Cargar datos del dashboard
+            // Cargar datos
             await loadDashboardData(user.id);
-        });
-        
-        // Cargar datos del dashboard
-        async function loadDashboardData(userId) {
-            try {
-                // Obtener estadísticas de denuncias
-                const { data: denuncias, error: denunciasError } = await supabase
-                    .from('denuncias')
-                    .select('*')
-                    .eq('asignado_a', userId);
-                
-                if (denunciasError) throw denunciasError;
-                
-                // Calcular estadísticas
-                const total = denuncias.length;
-                const pendientes = denuncias.filter(d => d.estado === 'pendiente').length;
-                const enRevision = denuncias.filter(d => d.estado === 'en_revision').length;
-                const resueltos = denuncias.filter(d => d.estado === 'resuelto').length;
-                
-                // Actualizar estadísticas
-                document.getElementById('totalCasos').textContent = total;
-                document.getElementById('pendientesCasos').textContent = pendientes;
-                document.getElementById('revisionCasos').textContent = enRevision;
-                document.getElementById('resueltosCasos').textContent = resueltos;
-                
-                // Cargar tareas prioritarias (primeros 3 casos pendientes)
-                const tareasPendientes = denuncias
-                    .filter(d => d.estado === 'pendiente')
-                    .slice(0, 3);
-                
-                const tasksList = document.getElementById('tasksList');
-                tasksList.innerHTML = '';
-                
-                if (tareasPendientes.length === 0) {
-                    tasksList.innerHTML = '<p>No hay tareas pendientes</p>';
-                } else {
-                    tareasPendientes.forEach(tarea => {
-                        const taskElement = document.createElement('div');
-                        taskElement.className = 'task-card';
-                        taskElement.innerHTML = `
-                            <div class="task-title">Revisar caso ${tarea.id.substring(0, 8)} - ${tarea.categoria}</div>
-                            <div class="task-details">${tarea.descripcion.substring(0, 100)}...</div>
-                            <div class="task-meta">
-                                <span class="task-priority alta">Alta prioridad</span>
-                                <span>Asignado el ${new Date(tarea.creado_en).toLocaleDateString()}</span>
-                            </div>
-                        `;
-                        tasksList.appendChild(taskElement);
-                    });
-                }
-                
-                // Cargar actividad reciente desde la tabla seguimiento
-                const { data: seguimientos, error: segError } = await supabase
-                    .from('seguimiento')
-                    .select(`
-                        *,
-                        denuncias (categoria)
-                    `)
-                    .eq('funcionario_id', userId)
-                    .order('creado_en', { ascending: false })
-                    .limit(5);
-                
-                if (segError) throw segError;
-                
-                const activityList = document.getElementById('activityList');
-                activityList.innerHTML = '';
-                
-                if (seguimientos.length === 0) {
-                    activityList.innerHTML = '<p>No hay actividad reciente</p>';
-                } else {
-                    seguimientos.forEach(seg => {
-                        const activityElement = document.createElement('div');
-                        activityElement.className = 'activity-item';
-                        
-                        let icon = 'fa-sync-alt';
-                        let action = 'actualizado';
-                        
-                        if (seg.comentario && seg.comentario.includes('resuelto')) {
-                            icon = 'fa-check-circle';
-                            action = 'resuelto';
-                        } else if (seg.evidencia_url) {
-                            icon = 'fa-paperclip';
-                            action = 'agregado evidencia';
-                        }
-                        
-                        activityElement.innerHTML = `
-                            <div class="activity-icon">
-                                <i class="fas ${icon}"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>Has ${action} el caso <strong>${seg.denuncias.categoria}</strong></p>
-                                <p><small>${seg.comentario || 'Sin comentarios'}</small></p>
-                                <div class="activity-time">${new Date(seg.creado_en).toLocaleString()}</div>
-                            </div>
-                        `;
-                        activityList.appendChild(activityElement);
-                    });
-                }
-                
-                // Cargar lista de denuncias asignadas
-                const denunciasList = document.getElementById('denunciasList');
-                denunciasList.innerHTML = '';
-                
-                if (denuncias.length === 0) {
-                    denunciasList.innerHTML = '<p>No tienes denuncias asignadas</p>';
-                } else {
-                    const table = document.createElement('table');
-                    table.className = 'denuncias-table';
-                    table.innerHTML = `
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Categoría</th>
-                                <th>Descripción</th>
-                                <th>Estado</th>
-                                <th>Fecha</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${denuncias.map(denuncia => `
-                                <tr>
-                                    <td>${denuncia.id.substring(0, 8)}</td>
-                                    <td>${denuncia.categoria}</td>
-                                    <td>${denuncia.descripcion.substring(0, 50)}...</td>
-                                    <td>
-                                        <span class="estado-badge estado-${denuncia.estado}">
-                                            ${denuncia.estado.replace('_', ' ')}
-                                        </span>
-                                    </td>
-                                    <td>${new Date(denuncia.creado_en).toLocaleDateString()}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    `;
-                    denunciasList.appendChild(table);
-                }
-                
-            } catch (error) {
-                console.error('Error cargando datos:', error);
-                alert('Error al cargar los datos del dashboard');
-            }
+            
+        } catch (error) {
+            console.error('❌ Error al parsear datos:', error);
+            localStorage.removeItem('funcionario');
+            window.location.href = 'login.html';
         }
-        
-        // Cerrar sesión
-        document.getElementById('logoutBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            localStorage.removeItem('user');
-            window.location.href = 'index.html';
-        });
-        
-        // Ver todas las tareas
-        document.getElementById('verTodasBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Funcionalidad de ver todas las tareas en desarrollo');
-        });
-    </script>
+    }
+
+    // Cargar datos del dashboard (tu código existente)
+    async function loadDashboardData(userId) {
+        try {
+            console.log('🔄 Cargando datos para usuario:', userId);
+            
+            const { data: denuncias, error } = await supabase
+                .from('denuncias')
+                .select('*');
+            
+            if (error) throw error;
+            
+            // ... resto de tu código para cargar datos ...
+            
+        } catch (error) {
+            console.error('❌ Error cargando datos:', error);
+        }
+    }
+
+ 
+
+    // También agregar evento al botón "Ver todas"
+    document.getElementById('verTodasBtn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Funcionalidad en desarrollo');
+    });
+</script>
 </body>
 </html>

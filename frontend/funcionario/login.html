@@ -221,6 +221,14 @@
       <a href="../index.html" class="back-link">
         <i class="fas fa-arrow-left"></i> Volver a la selección de roles
       </a>
+
+      <!-- Botón de limpieza para debugging -->
+      <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+        <small style="color: #666;">Para debugging:</small><br>
+        <button type="button" id="clearStorage" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+          <i class="fas fa-trash"></i> Limpiar Storage
+        </button>
+      </div>
     </div>
   </div>
   
@@ -238,6 +246,11 @@
     
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
+    // Debug: Verificar estado actual
+    console.log('🔍 Estado inicial del login:');
+    console.log('📍 localStorage:', localStorage);
+    console.log('🔄 URL actual:', window.location.href);
+
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       
@@ -261,7 +274,7 @@
       // Mostrar loading
       loading.style.display = 'block';
       
-      // Autenticar funcionario - NUEVO MÉTODO
+      // Autenticar funcionario
       await authenticateFuncionarioDirecto(email, password);
     });
     
@@ -278,6 +291,14 @@
       // Simulación de recuperación de contraseña
       showAlert(`Se ha enviado un enlace de recuperación a ${email}`, 'success');
     });
+
+    // Botón para limpiar storage (debugging)
+    document.getElementById('clearStorage').addEventListener('click', function() {
+      localStorage.clear();
+      sessionStorage.clear();
+      showAlert('Storage limpiado correctamente', 'success');
+      console.log('🧹 Storage limpiado manualmente');
+    });
     
     function showAlert(message, type) {
       const alertMessage = document.getElementById('alertMessage');
@@ -292,7 +313,7 @@
       }, 5000);
     }
     
-    // NUEVA FUNCIÓN: Autenticación directa con la tabla usuarios
+    // FUNCIÓN PRINCIPAL: Autenticación directa con la tabla usuarios
     async function authenticateFuncionarioDirecto(email, password) {
       try {
         const loading = document.getElementById('loading');
@@ -342,20 +363,23 @@
         }
 
         // 4. Login exitoso - Guardar en localStorage
-        localStorage.setItem('funcionario', JSON.stringify({
+        const userData = {
           id: usuarios.id,
           nombre: usuarios.nombre,
           correo: usuarios.correo,
           cargo: usuarios.cargo,
           rol: rolNombre,
           loginTime: new Date().toISOString()
-        }));
+        };
 
-        console.log('✅ Login exitoso, redirigiendo...');
+        localStorage.setItem('funcionario', JSON.stringify(userData));
+
+        console.log('✅ Login exitoso, datos guardados:', userData);
         showAlert('Inicio de sesión exitoso. Redirigiendo...', 'success');
 
-        // 5. Redirigir al panel de funcionario
+        // 5. Redirigir al panel de funcionario después de un breve delay
         setTimeout(() => {
+          console.log('🔄 Redirigiendo a funcionarios.html...');
           window.location.href = 'funcionarios.html';
         }, 1500);
 
@@ -365,32 +389,55 @@
         document.getElementById('loading').style.display = 'none';
       }
     }
-    
-    // Verificar si ya hay una sesión activa - NUEVO MÉTODO
-    document.addEventListener('DOMContentLoaded', async function() {
+
+    // VERIFICACIÓN DE SESIÓN ACTIVA - VERSIÓN MEJORADA
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🔐 Verificando sesión activa...');
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const logoutParam = urlParams.get('logout');
+      
+      // Si viene de un logout, limpiar session
+      if (logoutParam) {
+        console.log('🚪 Detectado parámetro de logout, limpiando sesión...');
+        localStorage.removeItem('funcionario');
+        // Limpiar el parámetro de la URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      
       const funcionarioData = localStorage.getItem('funcionario');
       
-      if (funcionarioData) {
-        try {
-          const funcionario = JSON.parse(funcionarioData);
-          
-          // Verificar que la sesión no sea muy antigua (opcional)
-          const loginTime = new Date(funcionario.loginTime);
-          const now = new Date();
-          const diffHours = (now - loginTime) / (1000 * 60 * 60);
-          
-          // Si la sesión tiene menos de 24 horas, redirigir automáticamente
-          if (diffHours < 24) {
-            console.log('🔄 Sesión activa encontrada, redirigiendo...');
+      if (!funcionarioData) {
+        console.log('ℹ️ No hay sesión activa');
+        return;
+      }
+      
+      try {
+        const funcionario = JSON.parse(funcionarioData);
+        console.log('📋 Sesión encontrada:', funcionario);
+        
+        // Verificar que la sesión no sea muy antigua (OPCIONAL - comentado temporalmente)
+        /*
+        const loginTime = new Date(funcionario.loginTime);
+        const now = new Date();
+        const diffHours = (now - loginTime) / (1000 * 60 * 60);
+        
+        // Si la sesión tiene menos de 24 horas, mostrar opción para redirigir
+        if (diffHours < 24) {
+          console.log('🔄 Sesión activa encontrada, ofreciendo redirección...');
+          if (confirm(`Ya hay una sesión activa de ${funcionario.nombre}. ¿Desea ir al panel de funcionario?`)) {
             window.location.href = 'funcionarios.html';
-          } else {
-            // Sesión expirada, limpiar localStorage
-            localStorage.removeItem('funcionario');
           }
-        } catch (e) {
-          // Error al parsear, limpiar localStorage
+        } else {
+          // Sesión expirada, limpiar localStorage
+          console.log('⏰ Sesión expirada, limpiando...');
           localStorage.removeItem('funcionario');
         }
+        */
+        
+      } catch (e) {
+        console.error('❌ Error al parsear sesión:', e);
+        localStorage.removeItem('funcionario');
       }
     });
 
@@ -415,6 +462,10 @@
     testConexion().then(result => {
       console.log('🔗 Estado conexión:', result ? '✅ Conectado' : '❌ Error');
     });
+
+    // Mostrar información de debug en consola
+    console.log('🎯 Login cargado correctamente');
+    console.log('📝 Para forzar cierre de sesión, use el botón "Limpiar Storage"');
   </script>
 </body>
 </html>
