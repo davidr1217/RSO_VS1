@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Estado - Ruta Sin Obstáculos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --azul-oscuro: #002244;
+            --azul-claro: #3399CC;
+            --rojo: #CC3333;
+            --blanco: #FFFFFF;
+            --gris-claro: #F5F5F5;
+            --gris-medio: #DDDDDD;
+            --gris-oscuro: #666666;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--gris-claro);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            padding: 15px 0;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 5px solid var(--rojo);
+            border-radius: 0 0 10px 10px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--blanco);
+        }
+
+        .logo h1 {
+            color: var(--blanco);
+            font-size: 1.6rem;
+        }
+
+        h2, h3 {
+            margin-bottom: 15px;
+            color: var(--azul-oscuro);
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            border-radius: 10px;
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(255,255,255,0.05);
+            border-left: 4px solid var(--rojo);
+        }
+        
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+        }
+        
+        .content {
+            flex: 1;
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--azul-claro);
+            color: var(--blanco);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--azul-oscuro);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--azul-claro);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--azul-oscuro);
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            border-color: var(--azul-claro);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(51, 153, 204, 0.2);
+        }
+        
+        .success-message {
+            background-color: #D4EDDA;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            border-left: 5px solid #28A745;
+        }
+        
+        .code-display {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .status-pendiente { background-color: #FFF3CD; color: #856404; }
+        .status-revision { background-color: #CCE5FF; color: #004085; }
+        .status-resuelta { background-color: #D4EDDA; color: #155724; }
+        
+        .report-details {
+            background-color: var(--gris-claro);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--gris-oscuro);
+            border-top: 1px solid var(--gris-medio);
+            background-color: var(--blanco);
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-road fa-2x"></i>
+                <h1>RSO Ruta Sin Obstáculos</h1>
+            </div>
+            <p>Sistema de Reporte de Invasión al Espacio Público</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="menu-item" onclick="window.location.href='start.html'">
+                    <i class="fas fa-home"></i><span>Inicio</span>
+                </div>
+                <div class="menu-item" onclick="window.location.href='denunciar.html'">
+                    <i class="fas fa-flag"></i><span>Reportar Invasión</span>
+                </div>
+                <div class="menu-item active" onclick="window.location.href='consultar.html'">
+                    <i class="fas fa-search"></i><span>Consultar Estado</span>
+                </div>
+                <div class="menu-item" onclick="window.location.href='informacion.html'">
+                    <i class="fas fa-info-circle"></i><span>Información</span>
+                </div>
+                <div class="menu-item" onclick="window.location.href='mapa.html'">
+                    <i class="fas fa-map-marked-alt"></i><span>Mapa de Reportes</span>
+                </div>
+                <div class="menu-item" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Volver a la Selección de Roles</span>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="section active" id="consultar">
+                    <h2><i class="fas fa-search"></i> Consultar Estado de Reporte</h2>
+                    <p>Ingrese el código único de seguimiento que recibió al realizar su reporte.</p>
+                    
+                    <div class="form-group">
+                        <label for="codigo-consulta"><i class="fas fa-key"></i> Código de Seguimiento:</label>
+                        <input type="text" id="codigo-consulta" placeholder="Ej: PSJ-8A4B2C9D">
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <button class="btn btn-primary" id="btn-consultar">
+                            <i class="fas fa-search"></i> Consultar Estado
+                        </button>
+                    </div>
+                    
+                    <div id="resultado-consulta" style="display: none;">
+                        <div class="success-message">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                            <h3>Reporte Encontrado</h3>
+                        </div>
+                        
+                        <div class="report-details">
+                            <h3>Detalles del Reporte</h3>
+                            <p><strong>Código:</strong> <span id="codigo-detalle">PSJ-8A4B2C9D</span></p>
+                            <p><strong>Ubicación:</strong> <span id="ubicacion-detalle">Cra 25 #18-35, Centro</span></p>
+                            <p><strong>Categoría:</strong> <span id="categoria-detalle">Venta informal</span></p>
+                            <p><strong>Fecha de reporte:</strong> <span id="fecha-detalle">05/09/2025 14:23</span></p>
+                            <p><strong>Estado:</strong> <span class="status-indicator status-revision" id="estado-detalle">En revisión</span></p>
+                            <p><strong>Descripción:</strong> <span id="descripcion-detalle">Vendedores informales obstruyen el paso peatonal con puestos de comida.</span></p>
+                            
+                            <div id="respuesta-oficial" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #ddd;">
+                                <h4><i class="fas fa-comment-dots"></i> Respuesta Oficial</h4>
+                                <p><span id="respuesta-detalle">El caso ha sido asignado a un inspector municipal para su verificación y gestión.</span></p>
+                                <p><em>Última actualización: <span id="actualizacion-detalle">06/09/2025 09:15</span></em></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="sin-resultados" style="display: none; text-align: center;">
+                        <div style="color: var(--rojo); margin: 30px 0;">
+                            <i class="fas fa-exclamation-circle fa-3x"></i>
+                            <h3>No se encontró el reporte</h3>
+                            <p>Verifique que el código de seguimiento sea correcto.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>RSO Ruta Sin Obstáculos - Sistema de Reporte de Invasión al Espacio Público</p>
+            <p>© 2025 - Todos los derechos reservados</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('btn-consultar').addEventListener('click', function() {
+            const codigo = document.getElementById('codigo-consulta').value;
+            
+            if (codigo) {
+                document.getElementById('resultado-consulta').style.display = 'block';
+                document.getElementById('sin-resultados').style.display = 'none';
+                document.getElementById('codigo-detalle').textContent = codigo;
+            } else {
+                document.getElementById('resultado-consulta').style.display = 'none';
+                document.getElementById('sin-resultados').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
