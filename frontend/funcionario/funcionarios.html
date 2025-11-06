@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Funcionario - Sistema de Reportes</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type="module" src="../js/JS_supabase.js"></script>
     <style>
         :root {
             --azul-oscuro: #003366;
@@ -112,6 +111,7 @@
             cursor: pointer;
             transition: all 0.3s;
             border-left: 4px solid transparent;
+            position: relative;
         }
         
         .menu-item:hover, .menu-item.active {
@@ -122,6 +122,20 @@
         .menu-item i {
             width: 25px;
             text-align: center;
+        }
+        
+        .notification-badge {
+            background-color: var(--rojo);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            position: absolute;
+            right: 15px;
         }
         
         .admin-content {
@@ -402,24 +416,35 @@
                 <h3 id="welcomeName">Hola, Usuario</h3>
                 <p>Funcionario de Espacio Público</p>
             </div>
-            <div class="menu-item active">
+            <div class="menu-item active" data-target="dashboard" onclick="window.location.href='funcionarios.html'">
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Dashboard</span>
             </div>
-            <div class="menu-item">
-                <i class="fas fa-flag"></i>
+
+            <div class="menu-item" data-target="casos" onclick="window.location.href='Miscasos.html'">
+                <i class="fas fa-tasks"></i>
                 <span>Mis Casos</span>
             </div>
-            <div class="menu-item">
-                <i class="fas fa-tasks"></i>
+
+            <div class="menu-item" data-target="asignados" onclick="window.location.href='casosasignados.html'">
+                <i class="fas fa-clipboard-list"></i>
                 <span>Casos Asignados</span>
+                <span class="notification-badge" id="badgeAsignados">0</span>
             </div>
-            <div class="menu-item">
+
+            <div class="menu-item" data-target="nuevos" onclick="window.location.href='Nuevosreportes.html'">
+                <i class="fas fa-flag"></i>
+                <span>Nuevos Reportes</span>
+                <span class="notification-badge" id="badgeNuevos">0</span>
+            </div>
+
+            <div class="menu-item" data-target="mapa" onclick="window.location.href='Mapadecasos.html'">
                 <i class="fas fa-map-marked-alt"></i>
                 <span>Mapa de Casos</span>
             </div>
-            <div class="menu-item">
-                <i class="fas fa-user"></i>
+
+            <div class="menu-item" data-target="perfil" onclick="window.location.href='Miperfil.html'">
+                <i class="fas fa-user-cog"></i>
                 <span>Mi Perfil</span>
             </div>
         </div>
@@ -442,14 +467,14 @@
                     <div class="stat-title">Pendientes</div>
                 </div>
                 <div class="stat-card">
-                    <i class="fas fa-search fa-2x"></i>
-                    <div class="stat-number" id="revisionCasos">0</div>
-                    <div class="stat-title">En Revisión</div>
+                    <i class="fas fa-user-check fa-2x"></i>
+                    <div class="stat-number" id="asignadosCasos">0</div>
+                    <div class="stat-title">Casos Asignados</div>
                 </div>
                 <div class="stat-card">
-                    <i class="fas fa-check-circle fa-2x"></i>
-                    <div class="stat-number" id="resueltosCasos">0</div>
-                    <div class="stat-title">Resueltos</div>
+                    <i class="fas fa-flag fa-2x"></i>
+                    <div class="stat-number" id="nuevosCasos">0</div>
+                    <div class="stat-title">Nuevos Reportes</div>
                 </div>
             </div>
             
@@ -489,139 +514,282 @@
         </div>
     </div>
 
-   <script>
-    // Configuración directa de Supabase
-    const SUPABASE_URL = 'https://okulnfrlydegkyujpssj.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o';
-    
-    // Crear cliente Supabase
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    console.log('🔍 Iniciando funcionarios.html...');
-    console.log('📦 localStorage actual:', localStorage);
+    <script>
+        // Configuración directa de Supabase
+        const SUPABASE_URL = 'https://okulnfrlydegkyujpssj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o';
+        
+        // Crear cliente Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        console.log('🔍 Iniciando funcionarios.html...');
+        console.log('📦 localStorage actual:', localStorage);
 
-    // FUNCIÓN DE LOGOUT - VERSIÓN MEJORADA
-    function handleLogout(e) {
-        if (e) e.preventDefault();
-        
-        console.log('🚪 EJECUTANDO LOGOUT...');
-        
-        // Mostrar confirmación
-        if (!confirm('¿Está seguro que desea cerrar sesión?')) {
+        // FUNCIÓN DE LOGOUT - VERSIÓN MEJORADA
+        function handleLogout(e) {
+            if (e) e.preventDefault();
+            
+            console.log('🚪 EJECUTANDO LOGOUT...');
+            
+            // Mostrar confirmación
+            if (!confirm('¿Está seguro que desea cerrar sesión?')) {
+                return false;
+            }
+            
+            // Limpiar TODO el localStorage
+            localStorage.removeItem('funcionario');
+            localStorage.removeItem('user');
+            sessionStorage.clear();
+            
+            console.log('✅ Datos eliminados, redirigiendo...');
+            
+            // Redirigir inmediatamente
+            window.location.href = 'login.html?logout=' + Date.now();
             return false;
         }
-        
-        // Limpiar TODO el localStorage
-        localStorage.removeItem('funcionario');
-        localStorage.removeItem('user');
-        sessionStorage.clear();
-        
-        console.log('✅ Datos eliminados, redirigiendo...');
-        
-        // Redirigir inmediatamente
-        window.location.href = 'login.html?logout=' + Date.now();
-        return false;
-    }
 
-    // Configurar eventos cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('🔧 DOM cargado, configurando eventos...');
-        
-        // CONFIGURAR BOTÓN DE LOGOUT - MÚLTIPLES MÉTODOS
-        const logoutBtn = document.getElementById('logoutBtn');
-        console.log('📍 Botón de logout:', logoutBtn);
-        
-        if (logoutBtn) {
-            // Método 1: onclick directo
-            logoutBtn.onclick = handleLogout;
+        // Configurar eventos cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 DOM cargado, configurando eventos...');
             
-            // Método 2: addEventListener
-            logoutBtn.addEventListener('click', handleLogout);
+            // CONFIGURAR BOTÓN DE LOGOUT
+            const logoutBtn = document.getElementById('logoutBtn');
+            console.log('📍 Botón de logout:', logoutBtn);
             
-            // Método 3: También prevenir comportamiento por defecto del enlace
-            logoutBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            });
+            if (logoutBtn) {
+                logoutBtn.onclick = handleLogout;
+                console.log('✅ Eventos de logout configurados');
+            } else {
+                console.error('❌ NO SE ENCUENTRA EL BOTÓN logoutBtn');
+            }
+
+            // Verificar autenticación
+            verificarAutenticacion();
+        });
+
+        // Función para verificar autenticación
+        async function verificarAutenticacion() {
+            console.log('🔐 Verificando autenticación...');
+            const funcionarioData = localStorage.getItem('funcionario');
+            console.log('📋 Datos de funcionario:', funcionarioData);
             
-            console.log('✅ Eventos de logout configurados');
-        } else {
-            console.error('❌ NO SE ENCUENTRA EL BOTÓN logoutBtn');
-            // Buscar cualquier botón que pueda ser de logout
-            const allLinks = document.querySelectorAll('a');
-            allLinks.forEach(link => {
-                if (link.textContent.includes('Cerrar') || link.textContent.includes('Salir')) {
-                    console.log('🔄 Encontrado botón alternativo:', link);
-                    link.onclick = handleLogout;
+            if (!funcionarioData) {
+                console.log('❌ No autenticado, redirigiendo a login.html');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const user = JSON.parse(funcionarioData);
+                console.log('✅ Usuario autenticado:', user.nombre);
+                
+                // Actualizar información del usuario
+                document.getElementById('userName').textContent = user.nombre;
+                document.getElementById('userEmail').textContent = user.correo;
+                document.getElementById('welcomeName').textContent = `Hola, ${user.nombre.split(' ')[0]}`;
+                document.getElementById('userAvatar').textContent = user.nombre.charAt(0);
+                
+                // Actualizar fecha
+                document.getElementById('currentDate').textContent = `Hoy: ${new Date().toLocaleDateString()}`;
+                
+                // Cargar datos
+                await loadDashboardData(user.id);
+                
+            } catch (error) {
+                console.error('❌ Error al parsear datos:', error);
+                localStorage.removeItem('funcionario');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Cargar datos del dashboard
+        async function loadDashboardData(userId) {
+            try {
+                console.log('🔄 Cargando datos para usuario:', userId);
+                
+                // Obtener todas las denuncias
+                const { data: denuncias, error } = await supabase
+                    .from('denuncias')
+                    .select('*');
+                
+                if (error) throw error;
+                
+                console.log('📊 Total de denuncias:', denuncias.length);
+                
+                // Calcular estadísticas
+                const totalCasos = denuncias.length;
+                const pendientesCasos = denuncias.filter(d => d.estado === 'pendiente').length;
+                const asignadosCasos = denuncias.filter(d => d.asignado_a === userId).length;
+                const nuevosCasos = denuncias.filter(d => {
+                    // Considerar como "nuevo" si fue creado en los últimos 7 días
+                    const fechaCreacion = new Date(d.fecha_creacion);
+                    const hoy = new Date();
+                    const diferenciaDias = (hoy - fechaCreacion) / (1000 * 60 * 60 * 24);
+                    return diferenciaDias <= 7;
+                }).length;
+                
+                // Actualizar estadísticas en el dashboard
+                document.getElementById('totalCasos').textContent = totalCasos;
+                document.getElementById('pendientesCasos').textContent = pendientesCasos;
+                document.getElementById('asignadosCasos').textContent = asignadosCasos;
+                document.getElementById('nuevosCasos').textContent = nuevosCasos;
+                
+                // Actualizar badges en el sidebar
+                document.getElementById('badgeAsignados').textContent = asignadosCasos;
+                document.getElementById('badgeNuevos').textContent = nuevosCasos;
+                
+                // Cargar tareas prioritarias (casos asignados al usuario)
+                await loadTareasPrioritarias(userId);
+                
+                // Cargar actividad reciente
+                await loadActividadReciente();
+                
+                // Cargar denuncias asignadas
+                await loadDenunciasAsignadas(userId);
+                
+            } catch (error) {
+                console.error('❌ Error cargando datos:', error);
+                document.getElementById('tasksList').innerHTML = '<div class="loading">Error al cargar los datos</div>';
+                document.getElementById('activityList').innerHTML = '<div class="loading">Error al cargar la actividad</div>';
+                document.getElementById('denunciasList').innerHTML = '<div class="loading">Error al cargar las denuncias</div>';
+            }
+        }
+
+        // Cargar tareas prioritarias
+        async function loadTareasPrioritarias(userId) {
+            try {
+                const { data: tareas, error } = await supabase
+                    .from('denuncias')
+                    .select('*')
+                    .eq('asignado_a', userId)
+                    .in('estado', ['pendiente', 'en_revision'])
+                    .order('fecha_creacion', { ascending: false })
+                    .limit(5);
+                
+                if (error) throw error;
+                
+                const tasksList = document.getElementById('tasksList');
+                
+                if (tareas.length === 0) {
+                    tasksList.innerHTML = '<div class="task-card">No hay tareas prioritarias asignadas</div>';
+                    return;
                 }
-            });
+                
+                tasksList.innerHTML = tareas.map(tarea => `
+                    <div class="task-card ${tarea.estado === 'resuelto' ? 'resuelto' : ''}">
+                        <div class="task-title">${tarea.titulo || 'Sin título'}</div>
+                        <div class="task-details">${tarea.descripcion || 'Sin descripción'}</div>
+                        <div class="task-meta">
+                            <span>${new Date(tarea.fecha_creacion).toLocaleDateString()}</span>
+                            <span class="task-priority ${tarea.prioridad || 'media'}">${tarea.prioridad || 'Media'}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error cargando tareas:', error);
+                document.getElementById('tasksList').innerHTML = '<div class="loading">Error al cargar las tareas</div>';
+            }
         }
 
-        // Verificar autenticación
-        verificarAutenticacion();
-    });
-
-    // Función para verificar autenticación
-    async function verificarAutenticacion() {
-        console.log('🔐 Verificando autenticación...');
-        const funcionarioData = localStorage.getItem('funcionario');
-        console.log('📋 Datos de funcionario:', funcionarioData);
-        
-        if (!funcionarioData) {
-            console.log('❌ No autenticado, redirigiendo a login.html');
-            window.location.href = 'login.html';
-            return;
+        // Cargar actividad reciente
+        async function loadActividadReciente() {
+            try {
+                // En una implementación real, esto vendría de una tabla de actividades
+                // Por ahora simulamos datos
+                const actividades = [
+                    { tipo: 'nuevo_caso', descripcion: 'Nuevo caso asignado: Reparación de banco en plaza central', tiempo: 'Hace 2 horas' },
+                    { tipo: 'actualizacion', descripcion: 'Caso #123 actualizado: En proceso de revisión', tiempo: 'Hace 5 horas' },
+                    { tipo: 'comentario', descripcion: 'Nuevo comentario en caso #456', tiempo: 'Ayer' },
+                    { tipo: 'resuelto', descripcion: 'Caso #789 marcado como resuelto', tiempo: 'Hace 2 días' }
+                ];
+                
+                const activityList = document.getElementById('activityList');
+                activityList.innerHTML = actividades.map(act => `
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-${getActivityIcon(act.tipo)}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div>${act.descripcion}</div>
+                            <div class="activity-time">${act.tiempo}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error cargando actividad:', error);
+                document.getElementById('activityList').innerHTML = '<div class="loading">Error al cargar la actividad</div>';
+            }
         }
-        
-        try {
-            const user = JSON.parse(funcionarioData);
-            console.log('✅ Usuario autenticado:', user.nombre);
-            
-            // Actualizar información del usuario
-            document.getElementById('userName').textContent = user.nombre;
-            document.getElementById('userEmail').textContent = user.correo;
-            document.getElementById('welcomeName').textContent = `Hola, ${user.nombre.split(' ')[0]}`;
-            document.getElementById('userAvatar').textContent = user.nombre.charAt(0);
-            
-            // Actualizar fecha
-            document.getElementById('currentDate').textContent = `Hoy: ${new Date().toLocaleDateString()}`;
-            
-            // Cargar datos
-            await loadDashboardData(user.id);
-            
-        } catch (error) {
-            console.error('❌ Error al parsear datos:', error);
-            localStorage.removeItem('funcionario');
-            window.location.href = 'login.html';
+
+        // Obtener icono para tipo de actividad
+        function getActivityIcon(tipo) {
+            const icons = {
+                'nuevo_caso': 'flag',
+                'actualizacion': 'sync',
+                'comentario': 'comment',
+                'resuelto': 'check-circle'
+            };
+            return icons[tipo] || 'info-circle';
         }
-    }
 
-    // Cargar datos del dashboard (tu código existente)
-    async function loadDashboardData(userId) {
-        try {
-            console.log('🔄 Cargando datos para usuario:', userId);
-            
-            const { data: denuncias, error } = await supabase
-                .from('denuncias')
-                .select('*');
-            
-            if (error) throw error;
-            
-            // ... resto de tu código para cargar datos ...
-            
-        } catch (error) {
-            console.error('❌ Error cargando datos:', error);
+        // Cargar denuncias asignadas
+        async function loadDenunciasAsignadas(userId) {
+            try {
+                const { data: denuncias, error } = await supabase
+                    .from('denuncias')
+                    .select('*')
+                    .eq('asignado_a', userId)
+                    .order('fecha_creacion', { ascending: false })
+                    .limit(10);
+                
+                if (error) throw error;
+                
+                const denunciasList = document.getElementById('denunciasList');
+                
+                if (denuncias.length === 0) {
+                    denunciasList.innerHTML = '<div class="task-card">No hay denuncias asignadas</div>';
+                    return;
+                }
+                
+                // Crear tabla de denuncias
+                denunciasList.innerHTML = `
+                    <table class="denuncias-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Prioridad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${denuncias.map(denuncia => `
+                                <tr>
+                                    <td>#${denuncia.id}</td>
+                                    <td>${denuncia.titulo || 'Sin título'}</td>
+                                    <td>${new Date(denuncia.fecha_creacion).toLocaleDateString()}</td>
+                                    <td><span class="estado-badge estado-${denuncia.estado}">${denuncia.estado}</span></td>
+                                    <td><span class="task-priority ${denuncia.prioridad}">${denuncia.prioridad}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                
+            } catch (error) {
+                console.error('Error cargando denuncias:', error);
+                document.getElementById('denunciasList').innerHTML = '<div class="loading">Error al cargar las denuncias</div>';
+            }
         }
-    }
 
- 
-
-    // También agregar evento al botón "Ver todas"
-    document.getElementById('verTodasBtn')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        alert('Funcionalidad en desarrollo');
-    });
-</script>
+        // También agregar evento al botón "Ver todas"
+        document.getElementById('verTodasBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = 'casosasignados.html';
+        });
+    </script>
 </body>
 </html>

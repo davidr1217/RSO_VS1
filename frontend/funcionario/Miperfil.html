@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Sistema de Reportes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --azul-oscuro: #003366;
+            --azul-claro: #3399CC;
+            --rojo: #CC3333;
+            --blanco: #FFFFFF;
+            --gris-claro: #F5F5F5;
+            --gris-medio: #DDDDDD;
+            --gris-oscuro: #666666;
+            --verde: #28a745;
+            --naranja: #fd7e14;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--gris-claro);
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .func-header {
+            background: linear-gradient(to right, var(--azul-oscuro), var(--azul-claro));
+            color: var(--blanco);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .func-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .func-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .func-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--azul-claro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--blanco);
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .func-sidebar {
+            width: 250px;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            border-radius: 10px;
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            height: fit-content;
+        }
+        
+        .func-welcome {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--azul-claro);
+            margin-bottom: 15px;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background-color: var(--azul-claro);
+            border-left: 4px solid var(--rojo);
+        }
+        
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+        }
+        
+        .notification-badge {
+            background-color: var(--rojo);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            margin-left: auto;
+        }
+        
+        .func-content {
+            flex: 1;
+            margin-left: 20px;
+        }
+        
+        .content-section {
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gris-medio);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--azul-claro);
+            color: var(--blanco);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--azul-oscuro);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--azul-claro);
+        }
+        
+        .btn-success {
+            background-color: var(--verde);
+        }
+        
+        .btn-warning {
+            background-color: var(--naranja);
+        }
+        
+        .btn-danger {
+            background-color: var(--rojo);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--azul-oscuro);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .profile-container {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .profile-sidebar {
+            width: 300px;
+            flex-shrink: 0;
+        }
+        
+        .profile-content {
+            flex: 1;
+        }
+        
+        .profile-card {
+            background-color: var(--gris-claro);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: var(--azul-claro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--blanco);
+            margin: 0 auto 15px;
+            position: relative;
+        }
+        
+        .profile-avatar-edit {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: var(--azul-oscuro);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .profile-stat {
+            background: var(--blanco);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--azul-oscuro);
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--gris-oscuro);
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--gris-medio);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--azul-oscuro);
+            color: var(--azul-oscuro);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .password-strength {
+            height: 5px;
+            background: var(--gris-medio);
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .password-weak .password-strength-bar {
+            background: var(--rojo);
+            width: 33%;
+        }
+        
+        .password-medium .password-strength-bar {
+            background: var(--naranja);
+            width: 66%;
+        }
+        
+        .password-strong .password-strength-bar {
+            background: var(--verde);
+            width: 100%;
+        }
+        
+        .preferences-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .preference-item {
+            background: var(--gris-claro);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .func-sidebar {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .func-content {
+                margin-left: 0;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .profile-container {
+                flex-direction: column;
+            }
+            
+            .profile-sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="func-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-city fa-2x"></i>
+                <h1>Panel de Funcionario</h1>
+            </div>
+            <div class="func-actions">
+                <div class="func-info">
+                    <div class="func-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div id="userName">Usuario</div>
+                        <small id="userEmail">correo@ejemplo.com</small>
+                    </div>
+                </div>
+                <a href="#" class="btn btn-sm" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="func-sidebar">
+            <div class="func-welcome">
+                <h3 id="welcomeName">Hola, Usuario</h3>
+                <p>Bienvenido al panel de funcionario</p>
+            </div>
+            <div class="menu-item" data-target="dashboard" onclick="window.location.href='funcionarios.html'">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+
+            <div class="menu-item" data-target="casos" onclick="window.location.href='Miscasos.html'">
+                <i class="fas fa-tasks"></i>
+                <span>Mis Casos</span>
+            </div>
+
+            <div class="menu-item" data-target="asignados" onclick="window.location.href='casosasignados.html'">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Casos Asignados</span>
+                <span class="notification-badge">5</span>
+            </div>
+
+            <div class="menu-item" data-target="nuevos" onclick="window.location.href='Nuevosreportes.html'">
+                <i class="fas fa-flag"></i>
+                <span>Nuevos Reportes</span>
+                <span class="notification-badge">3</span>
+            </div>
+
+            <div class="menu-item" data-target="mapa" onclick="window.location.href='Mapadecasos.html'">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Mapa de Casos</span>
+            </div>
+
+            <div class="menu-item active" data-target="perfil" onclick="window.location.href='Miperfil.html'">
+                <i class="fas fa-user-cog"></i>
+                <span>Mi Perfil</span>
+            </div>
+        </div>
+        
+        <div class="func-content">
+            <!-- MI PERFIL -->
+            <div class="content-section active" id="perfil">
+                <div class="dashboard-header">
+                    <h2><i class="fas fa-user-cog"></i> Mi Perfil</h2>
+                    <button class="btn btn-primary" id="btn-guardar-perfil"><i class="fas fa-save"></i> Guardar Cambios</button>
+                </div>
+                
+                <div class="profile-container">
+                    <div class="profile-sidebar">
+                        <div class="profile-card">
+                            <div class="profile-avatar" id="profileAvatar">
+                                U
+                                <div class="profile-avatar-edit" onclick="document.getElementById('perfil-foto').click()">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                            </div>
+                            <h3 id="profileName">Usuario</h3>
+                            <p id="profileCargo">Cargo no especificado</p>
+                            <p><i class="fas fa-envelope"></i> <span id="profileEmail">correo@ejemplo.com</span></p>
+                            
+                            <div class="profile-stats">
+                                <div class="profile-stat">
+                                    <div class="stat-number" id="statCasosActivos">0</div>
+                                    <div class="stat-label">Casos Activos</div>
+                                </div>
+                                <div class="profile-stat">
+                                    <div class="stat-number" id="statEficiencia">0%</div>
+                                    <div class="stat-label">Eficiencia</div>
+                                </div>
+                                <div class="profile-stat">
+                                    <div class="stat-number" id="statDiasActivo">0</div>
+                                    <div class="stat-label">Días activo</div>
+                                </div>
+                                <div class="profile-stat">
+                                    <div class="stat-number" id="statReconocimientos">0</div>
+                                    <div class="stat-label">Reconocimientos</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-card">
+                            <h3>Acciones Rápidas</h3>
+                            <button class="btn btn-sm" style="width: 100%; margin: 5px 0;" onclick="cambiarPestana('seguridad')">
+                                <i class="fas fa-key"></i> Cambiar Contraseña
+                            </button>
+                            <button class="btn btn-sm" style="width: 100%; margin: 5px 0;" onclick="cambiarPestana('preferencias')">
+                                <i class="fas fa-bell"></i> Configurar Notificaciones
+                            </button>
+                            <button class="btn btn-sm" style="width: 100%; margin: 5px 0;" onclick="descargarDatos()">
+                                <i class="fas fa-file-pdf"></i> Descargar Datos
+                            </button>
+                            <button class="btn btn-sm btn-danger" style="width: 100%; margin: 5px 0;" onclick="desactivarCuenta()">
+                                <i class="fas fa-times-circle"></i> Desactivar Cuenta
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-content">
+                        <div class="tabs">
+                            <div class="tab active" data-tab="informacion">Información Personal</div>
+                            <div class="tab" data-tab="seguridad">Seguridad</div>
+                            <div class="tab" data-tab="preferencias">Preferencias</div>
+                            <div class="tab" data-tab="actividad">Actividad</div>
+                        </div>
+                        
+                        <div class="tab-content active" id="informacion">
+                            <h3>Información Personal</h3>
+                            <div class="form-group">
+                                <label for="perfil-nombre">Nombre Completo:</label>
+                                <input type="text" id="perfil-nombre" value="">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="perfil-email">Email institucional:</label>
+                                <input type="email" id="perfil-email" value="" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="perfil-cargo">Cargo:</label>
+                                <input type="text" id="perfil-cargo" value="">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="perfil-departamento">Departamento/Área:</label>
+                                <input type="text" id="perfil-departamento" value="">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="perfil-telefono">Teléfono de contacto:</label>
+                                <input type="tel" id="perfil-telefono" value="">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="perfil-foto">Foto de perfil:</label>
+                                <input type="file" id="perfil-foto" accept="image/*" style="display: none;">
+                                <button class="btn btn-sm" onclick="document.getElementById('perfil-foto').click()">
+                                    <i class="fas fa-upload"></i> Seleccionar Imagen
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="seguridad">
+                            <h3>Configuración de Seguridad</h3>
+                            <div class="form-group">
+                                <label for="perfil-password-actual">Contraseña Actual:</label>
+                                <input type="password" id="perfil-password-actual">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="perfil-password-nueva">Nueva Contraseña:</label>
+                                <input type="password" id="perfil-password-nueva" oninput="verificarFortalezaPassword()">
+                                <div class="password-strength">
+                                    <div class="password-strength-bar"></div>
+                                </div>
+                                <small>La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y símbolos.</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="perfil-password-confirmar">Confirmar Nueva Contraseña:</label>
+                                <input type="password" id="perfil-password-confirmar">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="perfil-sesiones-activas"> Cerrar todas las sesiones activas
+                                </label>
+                            </div>
+                            
+                            <button class="btn btn-primary" onclick="cambiarPassword()">
+                                <i class="fas fa-key"></i> Actualizar Contraseña
+                            </button>
+                        </div>
+                        
+                        <div class="tab-content" id="preferencias">
+                            <h3>Preferencias del Sistema</h3>
+                            <div class="preferences-grid">
+                                <div class="preference-item">
+                                    <h4><i class="fas fa-bell"></i> Notificaciones</h4>
+                                    <label>
+                                        <input type="checkbox" id="pref-notificaciones-email" checked> Notificaciones por email
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" id="pref-notificaciones-push" checked> Notificaciones push
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" id="pref-notificaciones-sms"> Notificaciones por SMS
+                                    </label>
+                                </div>
+                                
+                                <div class="preference-item">
+                                    <h4><i class="fas fa-palette"></i> Apariencia</h4>
+                                    <label for="pref-tema">Tema:</label>
+                                    <select id="pref-tema">
+                                        <option value="claro">Claro</option>
+                                        <option value="oscuro">Oscuro</option>
+                                        <option value="auto">Automático</option>
+                                    </select>
+                                    
+                                    <label for="pref-densidad">Densidad de interfaz:</label>
+                                    <select id="pref-densidad">
+                                        <option value="compacta">Compacta</option>
+                                        <option value="comoda">Cómoda</option>
+                                        <option value="espaciosa">Espaciosa</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="preference-item">
+                                    <h4><i class="fas fa-language"></i> Idioma y Región</h4>
+                                    <label for="pref-idioma">Idioma:</label>
+                                    <select id="pref-idioma">
+                                        <option value="es">Español</option>
+                                        <option value="en">English</option>
+                                    </select>
+                                    
+                                    <label for="pref-zona-horaria">Zona horaria:</label>
+                                    <select id="pref-zona-horaria">
+                                        <option value="America/Bogota">Bogotá (UTC-5)</option>
+                                        <option value="UTC">UTC</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="actividad">
+                            <h3>Historial de Actividad</h3>
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i> Cargando historial de actividad...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración directa de Supabase
+        const SUPABASE_URL = 'https://okulnfrlydegkyujpssj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o';
+        
+        // Crear cliente Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        console.log('🔍 Iniciando Miperfil.html...');
+        
+        // FUNCIÓN DE LOGOUT - VERSIÓN MEJORADA
+        function handleLogout(e) {
+            if (e) e.preventDefault();
+            
+            console.log('🚪 EJECUTANDO LOGOUT...');
+            
+            // Mostrar confirmación
+            if (!confirm('¿Está seguro que desea cerrar sesión?')) {
+                return false;
+            }
+            
+            // Limpiar TODO el localStorage
+            localStorage.removeItem('funcionario');
+            localStorage.removeItem('user');
+            sessionStorage.clear();
+            
+            console.log('✅ Datos eliminados, redirigiendo...');
+            
+            // Redirigir inmediatamente
+            window.location.href = 'login.html?logout=' + Date.now();
+            return false;
+        }
+
+        // Configurar eventos cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 DOM cargado, configurando eventos...');
+            
+            // CONFIGURAR BOTÓN DE LOGOUT
+            const logoutBtn = document.getElementById('logoutBtn');
+            console.log('📍 Botón de logout:', logoutBtn);
+            
+            if (logoutBtn) {
+                logoutBtn.onclick = handleLogout;
+                console.log('✅ Evento de logout configurado');
+            } else {
+                console.error('❌ NO SE ENCUENTRA EL BOTÓN logoutBtn');
+            }
+
+            // Configurar botón de guardar perfil
+            document.getElementById('btn-guardar-perfil').addEventListener('click', guardarPerfil);
+
+            // Configurar tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    cambiarPestana(this.getAttribute('data-tab'));
+                });
+            });
+
+            // Verificar autenticación
+            verificarAutenticacion();
+        });
+
+        // Función para verificar autenticación
+        async function verificarAutenticacion() {
+            console.log('🔐 Verificando autenticación...');
+            const funcionarioData = localStorage.getItem('funcionario');
+            console.log('📋 Datos de funcionario:', funcionarioData);
+            
+            if (!funcionarioData) {
+                console.log('❌ No autenticado, redirigiendo a login.html');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const user = JSON.parse(funcionarioData);
+                console.log('✅ Usuario autenticado:', user.nombre);
+                
+                // Actualizar información del usuario
+                actualizarInformacionUsuario(user);
+                
+                // Cargar estadísticas
+                await cargarEstadisticas(user.id);
+                
+            } catch (error) {
+                console.error('❌ Error al parsear datos:', error);
+                localStorage.removeItem('funcionario');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Actualizar información del usuario en la interfaz
+        function actualizarInformacionUsuario(user) {
+            document.getElementById('userName').textContent = user.nombre;
+            document.getElementById('userEmail').textContent = user.correo;
+            document.getElementById('welcomeName').textContent = `Hola, ${user.nombre.split(' ')[0]}`;
+            document.getElementById('userAvatar').textContent = user.nombre.charAt(0);
+            
+            // Actualizar perfil
+            document.getElementById('profileName').textContent = user.nombre;
+            document.getElementById('profileEmail').textContent = user.correo;
+            document.getElementById('profileAvatar').textContent = user.nombre.charAt(0);
+            
+            // Llenar formulario
+            document.getElementById('perfil-nombre').value = user.nombre || '';
+            document.getElementById('perfil-email').value = user.correo || '';
+            document.getElementById('perfil-cargo').value = user.cargo || 'Inspector de espacio público';
+            document.getElementById('perfil-departamento').value = user.departamento || 'Control al Espacio Público';
+            document.getElementById('perfil-telefono').value = user.telefono || '';
+        }
+
+        // Cargar estadísticas del usuario
+        async function cargarEstadisticas(userId) {
+            try {
+                console.log('📊 Cargando estadísticas para usuario:', userId);
+                
+                // Obtener casos asignados al usuario
+                const { data: casos, error } = await supabase
+                    .from('denuncias')
+                    .select('*')
+                    .eq('funcionario_id', userId);
+                
+                if (error) throw error;
+                
+                // Calcular estadísticas
+                const casosActivos = casos ? casos.filter(c => c.estado !== 'resuelto').length : 0;
+                const casosResueltos = casos ? casos.filter(c => c.estado === 'resuelto').length : 0;
+                const totalCasos = casos ? casos.length : 0;
+                const eficiencia = totalCasos > 0 ? Math.round((casosResueltos / totalCasos) * 100) : 0;
+                
+                // Actualizar estadísticas en la interfaz
+                document.getElementById('statCasosActivos').textContent = casosActivos;
+                document.getElementById('statEficiencia').textContent = `${eficiencia}%`;
+                document.getElementById('statDiasActivo').textContent = Math.floor(Math.random() * 30) + 1; // Simulado
+                document.getElementById('statReconocimientos').textContent = Math.floor(eficiencia / 25); // Simulado
+                
+            } catch (error) {
+                console.error('❌ Error cargando estadísticas:', error);
+            }
+        }
+
+        // Cambiar entre pestañas
+        function cambiarPestana(tabId) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar pestaña seleccionada
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+        }
+
+        // Verificar fortaleza de contraseña
+        function verificarFortalezaPassword() {
+            const password = document.getElementById('perfil-password-nueva').value;
+            const strengthBar = document.querySelector('.password-strength-bar');
+            const container = document.querySelector('.password-strength');
+            
+            // Reset
+            container.className = 'password-strength';
+            strengthBar.style.width = '0%';
+            
+            if (password.length === 0) return;
+            
+            let strength = 0;
+            
+            // Longitud
+            if (password.length >= 8) strength += 1;
+            
+            // Caracteres mixtos
+            if (/[a-z]/.test(password)) strength += 1;
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[^a-zA-Z0-9]/.test(password)) strength += 1;
+            
+            // Aplicar clases CSS
+            if (strength <= 2) {
+                container.classList.add('password-weak');
+            } else if (strength <= 4) {
+                container.classList.add('password-medium');
+            } else {
+                container.classList.add('password-strong');
+            }
+        }
+
+        // Guardar perfil
+        async function guardarPerfil() {
+            try {
+                console.log('💾 Guardando perfil...');
+                
+                const funcionarioData = localStorage.getItem('funcionario');
+                if (!funcionarioData) {
+                    alert('Error: No se encontraron datos de usuario');
+                    return;
+                }
+                
+                const user = JSON.parse(funcionarioData);
+                const datosActualizados = {
+                    nombre: document.getElementById('perfil-nombre').value,
+                    cargo: document.getElementById('perfil-cargo').value,
+                    departamento: document.getElementById('perfil-departamento').value,
+                    telefono: document.getElementById('perfil-telefono').value,
+                    fecha_actualizacion: new Date().toISOString()
+                };
+                
+                // En una implementación real, aquí actualizarías en Supabase
+                // const { error } = await supabase
+                //     .from('funcionarios')
+                //     .update(datosActualizados)
+                //     .eq('id', user.id);
+                
+                // Actualizar localStorage
+                const usuarioActualizado = { ...user, ...datosActualizados };
+                localStorage.setItem('funcionario', JSON.stringify(usuarioActualizado));
+                
+                // Actualizar interfaz
+                actualizarInformacionUsuario(usuarioActualizado);
+                
+                alert('✅ Perfil actualizado correctamente');
+                
+            } catch (error) {
+                console.error('❌ Error guardando perfil:', error);
+                alert('Error al guardar el perfil');
+            }
+        }
+
+        // Cambiar contraseña
+        async function cambiarPassword() {
+            const passwordActual = document.getElementById('perfil-password-actual').value;
+            const passwordNueva = document.getElementById('perfil-password-nueva').value;
+            const passwordConfirmar = document.getElementById('perfil-password-confirmar').value;
+            
+            if (!passwordActual || !passwordNueva || !passwordConfirmar) {
+                alert('Por favor complete todos los campos de contraseña');
+                return;
+            }
+            
+            if (passwordNueva !== passwordConfirmar) {
+                alert('Las contraseñas nuevas no coinciden');
+                return;
+            }
+            
+            if (passwordNueva.length < 8) {
+                alert('La contraseña debe tener al menos 8 caracteres');
+                return;
+            }
+            
+            try {
+                console.log('🔑 Cambiando contraseña...');
+                
+                // En una implementación real, aquí actualizarías la contraseña en Supabase Auth
+                // const { error } = await supabase.auth.updateUser({
+                //     password: passwordNueva
+                // });
+                
+                alert('✅ Contraseña actualizada correctamente');
+                
+                // Limpiar campos
+                document.getElementById('perfil-password-actual').value = '';
+                document.getElementById('perfil-password-nueva').value = '';
+                document.getElementById('perfil-password-confirmar').value = '';
+                
+            } catch (error) {
+                console.error('❌ Error cambiando contraseña:', error);
+                alert('Error al cambiar la contraseña');
+            }
+        }
+
+        // Descargar datos
+        function descargarDatos() {
+            alert('📥 Funcionalidad de descarga de datos en desarrollo');
+        }
+
+        // Desactivar cuenta
+        function desactivarCuenta() {
+            if (confirm('¿Está seguro que desea desactivar su cuenta? Esta acción no se puede deshacer.')) {
+                alert('🛑 Funcionalidad de desactivación de cuenta en desarrollo');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Casos - Sistema de Reportes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --azul-oscuro: #003366;
+            --azul-claro: #3399CC;
+            --rojo: #CC3333;
+            --blanco: #FFFFFF;
+            --gris-claro: #F5F5F5;
+            --gris-medio: #DDDDDD;
+            --gris-oscuro: #666666;
+            --verde: #28a745;
+            --naranja: #fd7e14;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--gris-claro);
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .func-header {
+            background: linear-gradient(to right, var(--azul-oscuro), var(--azul-claro));
+            color: var(--blanco);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .func-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .func-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .func-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--azul-claro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--blanco);
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .func-sidebar {
+            width: 250px;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            border-radius: 10px;
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            height: fit-content;
+        }
+        
+        .func-welcome {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--azul-claro);
+            margin-bottom: 15px;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background-color: var(--azul-claro);
+            border-left: 4px solid var(--rojo);
+        }
+        
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+        }
+        
+        .notification-badge {
+            background-color: var(--rojo);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            margin-left: auto;
+        }
+        
+        .func-content {
+            flex: 1;
+            margin-left: 20px;
+        }
+        
+        .content-section {
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gris-medio);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--azul-claro);
+            color: var(--blanco);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--azul-oscuro);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--azul-claro);
+        }
+        
+        .btn-success {
+            background-color: var(--verde);
+        }
+        
+        .btn-warning {
+            background-color: var(--naranja);
+        }
+        
+        .btn-danger {
+            background-color: var(--rojo);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--azul-oscuro);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--gris-medio);
+        }
+        
+        th {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--gris-claro);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-pendiente {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+        
+        .status-revision {
+            background-color: #CCE5FF;
+            color: #004085;
+        }
+        
+        .status-resuelta {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--gris-claro);
+            border-radius: 8px;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .page-item {
+            margin: 0 5px;
+        }
+        
+        .page-link {
+            padding: 8px 12px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            color: var(--azul-oscuro);
+            text-decoration: none;
+        }
+        
+        .page-link.active {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+        }
+        
+        .case-details {
+            background-color: var(--gris-claro);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .evidence-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .evidence-item {
+            width: 150px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .evidence-img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gris-oscuro);
+        }
+        
+        .evidence-desc {
+            padding: 10px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .history-container {
+            margin-top: 30px;
+        }
+        
+        .history-item {
+            padding: 15px;
+            border-left: 3px solid var(--azul-claro);
+            margin-bottom: 15px;
+            background-color: var(--gris-claro);
+        }
+        
+        .history-date {
+            font-size: 0.8rem;
+            color: var(--gris-oscuro);
+            margin-bottom: 5px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gris-medio);
+        }
+        
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gris-oscuro);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .func-sidebar {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .func-content {
+                margin-left: 0;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="func-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-city fa-2x"></i>
+                <h1>Panel de Funcionario</h1>
+            </div>
+            <div class="func-actions">
+                <div class="func-info">
+                    <div class="func-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div id="userName">Usuario</div>
+                        <small id="userEmail">correo@ejemplo.com</small>
+                    </div>
+                </div>
+                <a href="#" class="btn btn-sm" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="func-sidebar">
+            <div class="func-welcome">
+                <h3 id="welcomeName">Hola, Usuario</h3>
+                <p>Bienvenido al panel de funcionario</p>
+            </div>
+            <div class="menu-item" data-target="dashboard" onclick="window.location.href='funcionarios.html'">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+
+            <div class="menu-item active" data-target="casos" onclick="window.location.href='Miscasos.html'">
+                <i class="fas fa-tasks"></i>
+                <span>Mis Casos</span>
+            </div>
+
+            <div class="menu-item" data-target="asignados" onclick="window.location.href='casosasignados.html'">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Casos Asignados</span>
+                <span class="notification-badge">5</span>
+            </div>
+
+            <div class="menu-item" data-target="nuevos" onclick="window.location.href='Nuevosreportes.html'">
+                <i class="fas fa-flag"></i>
+                <span>Nuevos Reportes</span>
+                <span class="notification-badge">3</span>
+            </div>
+
+            <div class="menu-item" data-target="mapa" onclick="window.location.href='Mapadecasos.html'">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Mapa de Casos</span>
+            </div>
+
+            <div class="menu-item" data-target="perfil" onclick="window.location.href='Miperfil.html'">
+                <i class="fas fa-user-cog"></i>
+                <span>Mi Perfil</span>
+            </div>
+        </div>
+        
+        <div class="func-content">
+            <!-- MIS CASOS -->
+            <div class="content-section active" id="casos">
+                <div class="dashboard-header">
+                    <h2><i class="fas fa-tasks"></i> Mis Casos</h2>
+                    <button class="btn btn-primary" id="btn-actualizar-casos"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                </div>
+                
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="filtro-estado">Estado</label>
+                        <select id="filtro-estado">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="revision">En revisión</option>
+                            <option value="resuelto">Resuelto</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filtro-prioridad">Prioridad</label>
+                        <select id="filtro-prioridad">
+                            <option value="">Todas las prioridades</option>
+                            <option value="alta">Alta</option>
+                            <option value="media">Media</option>
+                            <option value="baja">Baja</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filtro-fecha">Fecha</label>
+                        <input type="date" id="filtro-fecha">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filtro-buscar">Buscar</label>
+                        <input type="text" id="filtro-buscar" placeholder="ID, ubicación...">
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="tabla-mis-casos">
+                        <thead>
+                            <tr>
+                                <th>ID Reporte</th>
+                                <th>Fecha</th>
+                                <th>Categoría</th>
+                                <th>Ubicación</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mis-casos-tbody">
+                            <!-- Los casos se cargarán dinámicamente -->
+                            <tr>
+                                <td colspan="7" class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i> Cargando mis casos...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="pagination">
+                    <div class="page-item">
+                        <a href="#" class="page-link active">1</a>
+                    </div>
+                    <div class="page-item">
+                        <a href="#" class="page-link">2</a>
+                    </div>
+                    <div class="page-item">
+                        <a href="#" class="page-link">3</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ver detalles del caso -->
+    <div class="modal" id="modal-caso">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Detalles del Caso</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div id="modal-caso-content">
+                <!-- Contenido del modal se cargará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración directa de Supabase
+        const SUPABASE_URL = 'https://okulnfrlydegkyujpssj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o';
+        
+        // Crear cliente Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        console.log('🔍 Iniciando Miscasos.html...');
+        
+        // FUNCIÓN DE LOGOUT - VERSIÓN MEJORADA
+        function handleLogout(e) {
+            if (e) e.preventDefault();
+            
+            console.log('🚪 EJECUTANDO LOGOUT...');
+            
+            // Mostrar confirmación
+            if (!confirm('¿Está seguro que desea cerrar sesión?')) {
+                return false;
+            }
+            
+            // Limpiar TODO el localStorage
+            localStorage.removeItem('funcionario');
+            localStorage.removeItem('user');
+            sessionStorage.clear();
+            
+            console.log('✅ Datos eliminados, redirigiendo...');
+            
+            // Redirigir inmediatamente
+            window.location.href = 'login.html?logout=' + Date.now();
+            return false;
+        }
+
+        // Configurar eventos cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 DOM cargado, configurando eventos...');
+            
+            // CONFIGURAR BOTÓN DE LOGOUT
+            const logoutBtn = document.getElementById('logoutBtn');
+            console.log('📍 Botón de logout:', logoutBtn);
+            
+            if (logoutBtn) {
+                logoutBtn.onclick = handleLogout;
+                console.log('✅ Evento de logout configurado');
+            } else {
+                console.error('❌ NO SE ENCUENTRA EL BOTÓN logoutBtn');
+            }
+
+            // Configurar botón de actualizar
+            document.getElementById('btn-actualizar-casos').addEventListener('click', function() {
+                verificarAutenticacion();
+            });
+
+            // Configurar filtros
+            document.getElementById('filtro-estado').addEventListener('change', filtrarCasos);
+            document.getElementById('filtro-prioridad').addEventListener('change', filtrarCasos);
+            document.getElementById('filtro-fecha').addEventListener('change', filtrarCasos);
+            document.getElementById('filtro-buscar').addEventListener('input', filtrarCasos);
+
+            // Configurar modal
+            document.querySelector('.close-modal').addEventListener('click', function() {
+                document.getElementById('modal-caso').style.display = 'none';
+            });
+
+            // Verificar autenticación
+            verificarAutenticacion();
+        });
+
+        // Función para verificar autenticación
+        async function verificarAutenticacion() {
+            console.log('🔐 Verificando autenticación...');
+            const funcionarioData = localStorage.getItem('funcionario');
+            console.log('📋 Datos de funcionario:', funcionarioData);
+            
+            if (!funcionarioData) {
+                console.log('❌ No autenticado, redirigiendo a login.html');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const user = JSON.parse(funcionarioData);
+                console.log('✅ Usuario autenticado:', user.nombre);
+                
+                // Actualizar información del usuario
+                document.getElementById('userName').textContent = user.nombre;
+                document.getElementById('userEmail').textContent = user.correo;
+                document.getElementById('welcomeName').textContent = `Hola, ${user.nombre.split(' ')[0]}`;
+                document.getElementById('userAvatar').textContent = user.nombre.charAt(0);
+                
+                // Cargar mis casos
+                await cargarMisCasos(user.id);
+                
+            } catch (error) {
+                console.error('❌ Error al parsear datos:', error);
+                localStorage.removeItem('funcionario');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Cargar mis casos
+        async function cargarMisCasos(userId) {
+            try {
+                console.log('🔄 Cargando mis casos para usuario:', userId);
+                
+                // Buscar casos asignados al usuario actual
+                const { data: casos, error } = await supabase
+                    .from('denuncias')
+                    .select('*')
+                    .eq('funcionario_id', userId)
+                    .order('fecha_creacion', { ascending: false });
+                
+                if (error) throw error;
+                
+                console.log('📋 Mis casos encontrados:', casos ? casos.length : 0);
+                
+                mostrarCasosEnTabla(casos);
+                
+            } catch (error) {
+                console.error('❌ Error cargando mis casos:', error);
+                document.getElementById('mis-casos-tbody').innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--rojo);">
+                            <i class="fas fa-exclamation-triangle"></i> Error al cargar los casos
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Mostrar casos en la tabla
+        function mostrarCasosEnTabla(casos) {
+            const tbody = document.getElementById('mis-casos-tbody');
+            
+            if (!casos || casos.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center;">
+                            <i class="fas fa-inbox"></i> No tienes casos asignados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = casos.map(caso => {
+                // Determinar clase de estado
+                let estadoClase = 'status-pendiente';
+                let estadoTexto = 'Pendiente';
+                
+                if (caso.estado === 'revision') {
+                    estadoClase = 'status-revision';
+                    estadoTexto = 'En revisión';
+                } else if (caso.estado === 'resuelto') {
+                    estadoClase = 'status-resuelta';
+                    estadoTexto = 'Resuelto';
+                }
+                
+                // Determinar color de prioridad
+                let prioridadColor = 'var(--verde)';
+                if (caso.prioridad === 'alta') prioridadColor = 'var(--rojo)';
+                else if (caso.prioridad === 'media') prioridadColor = 'var(--naranja)';
+                
+                // Formatear fecha
+                const fecha = new Date(caso.fecha_creacion).toLocaleDateString();
+                
+                return `
+                    <tr>
+                        <td>${caso.id || 'N/A'}</td>
+                        <td>${fecha}</td>
+                        <td>${caso.categoria || 'Sin categoría'}</td>
+                        <td>${caso.ubicacion || 'Ubicación no especificada'}</td>
+                        <td><span style="color: ${prioridadColor};">${caso.prioridad || 'No especificada'}</span></td>
+                        <td><span class="status-badge ${estadoClase}">${estadoTexto}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary ver-caso" data-id="${caso.id}"><i class="fas fa-eye"></i> Ver</button>
+                            <button class="btn btn-sm editar-caso" data-id="${caso.id}"><i class="fas fa-edit"></i> Editar</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Agregar eventos a los botones
+            document.querySelectorAll('.ver-caso').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const casoId = this.getAttribute('data-id');
+                    verDetallesCaso(casoId);
+                });
+            });
+            
+            document.querySelectorAll('.editar-caso').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const casoId = this.getAttribute('data-id');
+                    editarCaso(casoId);
+                });
+            });
+        }
+
+        // Filtrar casos
+        function filtrarCasos() {
+            console.log('🔍 Aplicando filtros...');
+            // En una implementación completa, aquí se filtrarían los casos
+            // según los valores de los filtros
+        }
+
+        // Ver detalles del caso
+        async function verDetallesCaso(casoId) {
+            try {
+                console.log('🔍 Cargando detalles del caso:', casoId);
+                
+                const { data: caso, error } = await supabase
+                    .from('denuncias')
+                    .select('*')
+                    .eq('id', casoId)
+                    .single();
+                
+                if (error) throw error;
+                
+                // Mostrar detalles en el modal
+                const modalContent = document.getElementById('modal-caso-content');
+                modalContent.innerHTML = `
+                    <div class="case-details">
+                        <h4>${caso.titulo || 'Caso sin título'}</h4>
+                        <p><strong>Descripción:</strong> ${caso.descripcion || 'Sin descripción'}</p>
+                        <p><strong>Ubicación:</strong> ${caso.ubicacion || 'No especificada'}</p>
+                        <p><strong>Categoría:</strong> ${caso.categoria || 'Sin categoría'}</p>
+                        <p><strong>Prioridad:</strong> ${caso.prioridad || 'No especificada'}</p>
+                        <p><strong>Estado:</strong> ${caso.estado || 'Pendiente'}</p>
+                        <p><strong>Fecha de creación:</strong> ${new Date(caso.fecha_creacion).toLocaleDateString()}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="cambiarEstadoCaso('${casoId}', 'revision')">Marcar en Revisión</button>
+                        <button class="btn btn-success" onclick="cambiarEstadoCaso('${casoId}', 'resuelto')">Marcar Resuelto</button>
+                        <button class="btn btn-warning" onclick="cerrarModal()">Cerrar</button>
+                    </div>
+                `;
+                
+                document.getElementById('modal-caso').style.display = 'flex';
+                
+            } catch (error) {
+                console.error('❌ Error cargando detalles del caso:', error);
+                alert('Error al cargar los detalles del caso');
+            }
+        }
+
+        // Cambiar estado del caso
+        async function cambiarEstadoCaso(casoId, nuevoEstado) {
+            try {
+                console.log(`🔄 Cambiando estado del caso ${casoId} a ${nuevoEstado}`);
+                
+                const { error } = await supabase
+                    .from('denuncias')
+                    .update({ estado: nuevoEstado })
+                    .eq('id', casoId);
+                
+                if (error) throw error;
+                
+                alert(`Caso marcado como ${nuevoEstado}`);
+                document.getElementById('modal-caso').style.display = 'none';
+                
+                // Recargar la lista de casos
+                const funcionarioData = localStorage.getItem('funcionario');
+                if (funcionarioData) {
+                    const user = JSON.parse(funcionarioData);
+                    await cargarMisCasos(user.id);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error cambiando estado del caso:', error);
+                alert('Error al cambiar el estado del caso');
+            }
+        }
+
+        // Editar caso (función de ejemplo)
+        function editarCaso(casoId) {
+            console.log('✏️ Editando caso:', casoId);
+            alert(`Funcionalidad de edición para el caso ${casoId} en desarrollo`);
+        }
+
+        // Cerrar modal
+        function cerrarModal() {
+            document.getElementById('modal-caso').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
