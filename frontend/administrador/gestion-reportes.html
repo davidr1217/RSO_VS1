@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Reportes - Panel de Administración</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --azul-oscuro: #003366;
+            --azul-claro: #3399CC;
+            --rojo: #CC3333;
+            --blanco: #FFFFFF;
+            --gris-claro: #F5F5F5;
+            --gris-medio: #DDDDDD;
+            --gris-oscuro: #666666;
+            --verde: #28a745;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--gris-claro);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .admin-header {
+            background: linear-gradient(to right, var(--azul-oscuro), var(--azul-claro));
+            color: var(--blanco);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .admin-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--azul-claro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--blanco);
+        }
+        
+        .main-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            width: 100%;
+            padding: 0 20px;
+            gap: 20px;
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            border-radius: 10px;
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            height: fit-content;
+        }
+        
+        .admin-welcome {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--azul-claro);
+            margin-bottom: 15px;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            text-decoration: none;
+            color: var(--blanco);
+            position: relative;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background-color: var(--azul-claro);
+            border-left: 4px solid var(--rojo);
+        }
+        
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+        }
+        
+        .notification-badge {
+            background-color: var(--rojo);
+            color: var(--blanco);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            position: absolute;
+            right: 15px;
+        }
+        
+        .admin-content {
+            flex: 1;
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gris-medio);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--azul-claro);
+        }
+        
+        .btn-primary {
+            background-color: var(--azul-oscuro);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .btn-danger {
+            background-color: var(--rojo);
+        }
+        
+        .btn-danger:hover {
+            background-color: #b02a37;
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--gris-claro);
+            border-radius: 8px;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--azul-oscuro);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--gris-medio);
+        }
+        
+        th {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--gris-claro);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-pendiente {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+        
+        .status-revision {
+            background-color: #CCE5FF;
+            color: #004085;
+        }
+        
+        .status-resuelta {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .page-item {
+            margin: 0 5px;
+        }
+        
+        .page-link {
+            padding: 8px 12px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            color: var(--azul-oscuro);
+            text-decoration: none;
+        }
+        
+        .page-link.active {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-city fa-2x"></i>
+                <h1>Panel de Administración</h1>
+            </div>
+            <div class="admin-actions">
+                <div class="admin-info">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div>
+                        <div>Administrador del Sistema</div>
+                        <small id="correo-usuario">admin@alcaldiapasto.gov.co</small>
+                    </div>
+                </div>
+                <a href="panel.html" class="btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="admin-sidebar">
+            <div class="admin-welcome">
+                <h3>Hola, Administrador</h3>
+                <p>Bienvenido al panel de control</p>
+            </div>
+            
+            <!-- Menú de navegación para administrador -->
+            <div class="menu-item" data-target="dashboard" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            
+            <div class="menu-item active" data-target="reportes" onclick="window.location.href='gestion-reportes.html'">
+                <i class="fas fa-flag"></i>
+                <span>Gestión de Reportes</span>
+                <span class="notification-badge">12</span>
+            </div>
+            
+            <div class="menu-item" data-target="usuarios" onclick="window.location.href='gestion-usuarios.html'">
+                <i class="fas fa-users"></i>
+                <span>Gestión de Usuarios</span>
+                <span class="notification-badge">5</span>
+            </div>
+            
+            <div class="menu-item" data-target="zonas" onclick="window.location.href='gestion-zonas.html'">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Gestión de Zonas</span>
+            </div>
+            
+            <div class="menu-item" data-target="asignaciones" onclick="window.location.href='asignaciones.html'">
+                <i class="fas fa-tasks"></i>
+                <span>Asignaciones</span>
+                <span class="notification-badge">8</span>
+            </div>
+            
+            <div class="menu-item" data-target="estadisticas" onclick="window.location.href='estadisticas.html'">
+                <i class="fas fa-chart-bar"></i>
+                <span>Estadísticas</span>
+            </div>
+            
+            <div class="menu-item" data-target="configuracion" onclick="window.location.href='configuracion.html'">
+                <i class="fas fa-cog"></i>
+                <span>Configuración</span>
+            </div>
+        </div>
+        
+        <div class="admin-content">
+            <div class="dashboard-header">
+                <h2><i class="fas fa-flag"></i> Gestión de Reportes</h2>
+                <button class="btn btn-primary" id="btn-exportar"><i class="fas fa-file-export"></i> Exportar</button>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="filtro-estado">Estado</label>
+                    <select id="filtro-estado">
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Revision">En revisión</option>
+                        <option value="Resuelto">Resuelto</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filtro-categoria">Categoría</label>
+                    <select id="filtro-categoria">
+                        <option value="">Todas las categorías</option>
+                        <option value="comercial">Ocupación comercial</option>
+                        <option value="vehicular">Invasión vehicular</option>
+                        <option value="venta">Venta informal</option>
+                        <option value="publicidad">Publicidad no autorizada</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filtro-fecha">Fecha</label>
+                    <input type="date" id="filtro-fecha">
+                </div>
+                <div class="filter-group">
+                    <label for="filtro-zona">Zona</label>
+                    <select id="filtro-zona">
+                        <option value="">Todas las zonas</option>
+                        <option value="centro">Centro</option>
+                        <option value="norte">Norte</option>
+                        <option value="sur">Sur</option>
+                        <option value="este">Este</option>
+                        <option value="oeste">Oeste</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="tabla-reportes">
+                    <thead>
+                        <tr>
+                            <th>ID Reporte</th>
+                            <th>Fecha</th>
+                            <th>Categoría</th>
+                            <th>Ubicación</th>
+                            <th>Estado</th>
+                            <th>Asignado a</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla">
+                        <!-- Los datos se cargarán dinámicamente desde JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination">
+                <div class="page-item">
+                    <a href="#" class="page-link" id="pagina-anterior"><i class="fas fa-chevron-left"></i></a>
+                </div>
+                <div class="page-item">
+                    <a href="#" class="page-link active">1</a>
+                </div>
+                <div class="page-item">
+                    <a href="#" class="page-link">2</a>
+                </div>
+                <div class="page-item">
+                    <a href="#" class="page-link">3</a>
+                </div>
+                <div class="page-item">
+                    <a href="#" class="page-link" id="pagina-siguiente"><i class="fas fa-chevron-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Configuración de Supabase
+            const supabaseUrl = "https://okulnfrlydegkyujpssj.supabase.co";
+            const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o";
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // Verificar si el usuario está autenticado
+            const correoGuardado = localStorage.getItem("usuarioEmail");
+            if (correoGuardado) {
+                document.getElementById("correo-usuario").textContent = correoGuardado;
+                document.getElementById("admin-avatar").textContent = correoGuardado.charAt(0).toUpperCase();
+            } else {
+                // Si no hay correo guardado, redirigir al login
+                window.location.href = "panel.html";
+            }
+
+            // Cargar reportes desde Supabase
+            async function cargarReportes() {
+                try {
+                    const { data: reportes, error } = await supabase.from('denuncias').select('*');
+                    if (error) throw error;
+
+                    console.log("📌 Reportes obtenidos:", reportes);
+                    mostrarReportesEnTabla(reportes);
+                    
+                    // Configurar filtros
+                    configurarFiltros(reportes);
+                    
+                } catch (e) {
+                    console.error("Error obteniendo reportes de Supabase:", e.message);
+                    document.getElementById("cuerpo-tabla").innerHTML = 
+                        `<tr><td colspan="7" style="text-align:center;padding:20px;">Error al cargar los reportes: ${e.message}</td></tr>`;
+                }
+            }
+
+            // Mostrar reportes en la tabla
+            function mostrarReportesEnTabla(reportes) {
+                const cuerpoTabla = document.getElementById("cuerpo-tabla");
+                
+                if (reportes.length === 0) {
+                    cuerpoTabla.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;">No hay reportes para mostrar</td></tr>`;
+                    return;
+                }
+                
+                cuerpoTabla.innerHTML = reportes.map(reporte => {
+                    // Determinar la clase del estado
+                    let claseEstado = '';
+                    if (reporte.estado === 'Pendiente') claseEstado = 'status-pendiente';
+                    else if (reporte.estado === 'Revision') claseEstado = 'status-revision';
+                    else if (reporte.estado === 'Resuelto') claseEstado = 'status-resuelta';
+                    
+                    // Formatear fecha
+                    const fecha = new Date(reporte.creado_en);
+                    const fechaFormateada = fecha.toLocaleDateString('es-ES');
+                    
+                    return `
+                        <tr>
+                            <td>${reporte.id || 'N/A'}</td>
+                            <td>${fechaFormateada}</td>
+                            <td>${reporte.categoria || 'N/A'}</td>
+                            <td>${reporte.ubicacion || 'N/A'}</td>
+                            <td><span class="status-badge ${claseEstado}">${reporte.estado || 'N/A'}</span></td>
+                            <td>${reporte.asignado_a || '-'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="verReporte('${reporte.id}')"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm" onclick="editarReporte('${reporte.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="archivarReporte('${reporte.id}')"><i class="fas fa-archive"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Configurar filtros
+            function configurarFiltros(reportes) {
+                const filtroEstado = document.getElementById('filtro-estado');
+                const filtroCategoria = document.getElementById('filtro-categoria');
+                const filtroFecha = document.getElementById('filtro-fecha');
+                const filtroZona = document.getElementById('filtro-zona');
+                
+                function aplicarFiltros() {
+                    let reportesFiltrados = [...reportes];
+                    
+                    // Filtrar por estado
+                    if (filtroEstado.value) {
+                        reportesFiltrados = reportesFiltrados.filter(r => r.estado === filtroEstado.value);
+                    }
+                    
+                    // Filtrar por categoría
+                    if (filtroCategoria.value) {
+                        reportesFiltrados = reportesFiltrados.filter(r => r.categoria === filtroCategoria.value);
+                    }
+                    
+                    // Filtrar por fecha
+                    if (filtroFecha.value) {
+                        const fechaFiltro = new Date(filtroFecha.value);
+                        reportesFiltrados = reportesFiltrados.filter(r => {
+                            const fechaReporte = new Date(r.creado_en);
+                            return fechaReporte.toDateString() === fechaFiltro.toDateString();
+                        });
+                    }
+                    
+                    // Filtrar por zona
+                    if (filtroZona.value) {
+                        reportesFiltrados = reportesFiltrados.filter(r => r.zona === filtroZona.value);
+                    }
+                    
+                    mostrarReportesEnTabla(reportesFiltrados);
+                }
+                
+                // Aplicar filtros cuando cambien los valores
+                filtroEstado.addEventListener('change', aplicarFiltros);
+                filtroCategoria.addEventListener('change', aplicarFiltros);
+                filtroFecha.addEventListener('change', aplicarFiltros);
+                filtroZona.addEventListener('change', aplicarFiltros);
+            }
+
+            // Funciones para las acciones de los botones
+            window.verReporte = function(id) {
+                alert(`Ver reporte con ID: ${id}`);
+                // Aquí puedes implementar la lógica para mostrar los detalles del reporte
+            };
+            
+            window.editarReporte = function(id) {
+                alert(`Editar reporte con ID: ${id}`);
+                // Aquí puedes implementar la lógica para editar el reporte
+            };
+            
+            window.archivarReporte = function(id) {
+                if (confirm('¿Está seguro de que desea archivar este reporte?')) {
+                    alert(`Archivar reporte con ID: ${id}`);
+                    // Aquí puedes implementar la lógica para archivar el reporte
+                }
+            };
+
+            // Botón de exportar
+            document.getElementById('btn-exportar').addEventListener('click', function() {
+                alert('Exportando reportes...');
+                // Aquí puedes implementar la lógica para exportar los reportes
+            });
+
+            // Cargar los reportes al iniciar
+            cargarReportes();
+        });
+    </script>
+</body>
+</html>

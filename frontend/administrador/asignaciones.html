@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Asignaciones</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --azul-oscuro: #003366;
+            --azul-claro: #3399CC;
+            --rojo: #CC3333;
+            --blanco: #FFFFFF;
+            --gris-claro: #F5F5F5;
+            --gris-medio: #DDDDDD;
+            --gris-oscuro: #666666;
+            --verde: #28a745;
+            --naranja: #FF8C00;
+            --morado: #6f42c1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--gris-claro);
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .admin-header {
+            background: linear-gradient(to right, var(--azul-oscuro), var(--azul-claro));
+            color: var(--blanco);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .admin-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--azul-claro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--blanco);
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            border-radius: 10px;
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            height: fit-content;
+        }
+        
+        .admin-welcome {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--azul-claro);
+            margin-bottom: 15px;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            text-decoration: none;
+            color: var(--blanco);
+            position: relative;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background-color: var(--azul-claro);
+            border-left: 4px solid var(--rojo);
+        }
+        
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+        }
+        
+        .notification-badge {
+            background-color: var(--rojo);
+            color: var(--blanco);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            position: absolute;
+            right: 15px;
+        }
+        
+        .admin-content {
+            flex: 1;
+            margin-left: 20px;
+        }
+        
+        .content-section {
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gris-medio);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--azul-claro);
+        }
+        
+        .btn-primary {
+            background-color: var(--azul-oscuro);
+        }
+        
+        .btn-success {
+            background-color: var(--verde);
+        }
+        
+        .btn-danger {
+            background-color: var(--rojo);
+        }
+        
+        .btn-warning {
+            background-color: var(--naranja);
+        }
+        
+        .btn-purple {
+            background-color: var(--morado);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--gris-claro);
+            border-radius: 8px;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--azul-oscuro);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--gris-medio);
+        }
+        
+        th {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--gris-claro);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-pendiente {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+        
+        .status-proceso {
+            background-color: #CCE5FF;
+            color: #004085;
+        }
+        
+        .status-completada {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+        
+        .status-atrasada {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+        
+        .priority-alta {
+            color: var(--rojo);
+            font-weight: bold;
+        }
+        
+        .priority-media {
+            color: var(--naranja);
+            font-weight: bold;
+        }
+        
+        .priority-baja {
+            color: var(--verde);
+            font-weight: bold;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .page-item {
+            margin: 0 5px;
+        }
+        
+        .page-link {
+            padding: 8px 12px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            color: var(--azul-oscuro);
+            text-decoration: none;
+        }
+        
+        .page-link.active {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gris-medio);
+        }
+        
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gris-oscuro);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: var(--gris-medio);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--verde);
+            border-radius: 4px;
+        }
+        
+        .progress-50 {
+            width: 50%;
+            background-color: var(--naranja);
+        }
+        
+        .progress-75 {
+            width: 75%;
+            background-color: var(--azul-claro);
+        }
+        
+        .progress-25 {
+            width: 25%;
+            background-color: var(--rojo);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .badge-reporte {
+            background-color: #E9ECEF;
+            color: #495057;
+        }
+        
+        .badge-zona {
+            background-color: #E7F5FF;
+            color: #0C6DFD;
+        }
+        
+        .badge-usuario {
+            background-color: #FFF4DE;
+            color: #FD7E14;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .admin-content {
+                margin-left: 0;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-city fa-2x"></i>
+                <h1>Panel de Administración</h1>
+            </div>
+            <div class="admin-actions">
+                <div class="admin-info">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div>
+                        <div>Administrador del Sistema</div>
+                        <small id="correo-usuario">admin@alcaldiapasto.gov.co</small>
+                    </div>
+                </div>
+                <a href="panel.html" class="btn btn-sm"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="admin-sidebar">
+            <div class="admin-welcome">
+                <h3>Hola, Administrador</h3>
+                <p>Bienvenido al panel de control</p>
+            </div>
+            
+            <!-- Menú de navegación para administrador -->
+            <div class="menu-item" data-target="dashboard" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            
+            <div class="menu-item" data-target="reportes" onclick="window.location.href='gestion-reportes.html'">
+                <i class="fas fa-flag"></i>
+                <span>Gestión de Reportes</span>
+                <span class="notification-badge">12</span>
+            </div>
+            
+            <div class="menu-item" data-target="usuarios" onclick="window.location.href='gestion-usuarios.html'">
+                <i class="fas fa-users"></i>
+                <span>Gestión de Usuarios</span>
+                <span class="notification-badge">5</span>
+            </div>
+            
+            <div class="menu-item" data-target="zonas" onclick="window.location.href='gestion-zonas.html'">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Gestión de Zonas</span>
+            </div>
+            
+            <div class="menu-item active" data-target="asignaciones" onclick="window.location.href='asignaciones.html'">
+                <i class="fas fa-tasks"></i>
+                <span>Asignaciones</span>
+                <span class="notification-badge">8</span>
+            </div>
+            
+            <div class="menu-item" data-target="estadisticas" onclick="window.location.href='estadisticas.html'">
+                <i class="fas fa-chart-bar"></i>
+                <span>Estadísticas</span>
+            </div>
+            
+            <div class="menu-item" data-target="configuracion" onclick="window.location.href='configuracion.html'">
+                <i class="fas fa-cog"></i>
+                <span>Configuración</span>
+            </div>
+        </div>
+        
+        <div class="admin-content">
+            <div class="content-section active">
+                <div class="dashboard-header">
+                    <h2><i class="fas fa-tasks"></i> Gestión de Asignaciones</h2>
+                    <button class="btn btn-success" id="btn-nueva-asignacion"><i class="fas fa-plus"></i> Nueva Asignación</button>
+                </div>
+                
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="filtro-estado-asignacion">Estado</label>
+                        <select id="filtro-estado-asignacion">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="proceso">En proceso</option>
+                            <option value="completada">Completada</option>
+                            <option value="atrasada">Atrasada</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filtro-prioridad">Prioridad</label>
+                        <select id="filtro-prioridad">
+                            <option value="">Todas las prioridades</option>
+                            <option value="alta">Alta</option>
+                            <option value="media">Media</option>
+                            <option value="baja">Baja</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filtro-fecha-asignacion">Fecha de asignación</label>
+                        <input type="date" id="filtro-fecha-asignacion">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filtro-funcionario">Funcionario</label>
+                        <select id="filtro-funcionario">
+                            <option value="">Todos los funcionarios</option>
+                            <option value="1">Carlos Rodríguez</option>
+                            <option value="2">María González</option>
+                            <option value="3">Javier López</option>
+                            <option value="4">Ana Martínez</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="tabla-asignaciones">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Reporte</th>
+                                <th>Funcionario</th>
+                                <th>Fecha Asignación</th>
+                                <th>Fecha Límite</th>
+                                <th>Prioridad</th>
+                                <th>Progreso</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpo-tabla">
+                            <!-- Los datos se cargarán dinámicamente desde JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="pagination">
+                    <div class="page-item">
+                        <a href="#" class="page-link" id="pagina-anterior"><i class="fas fa-chevron-left"></i></a>
+                    </div>
+                    <div class="page-item">
+                        <a href="#" class="page-link active">1</a>
+                    </div>
+                    <div class="page-item">
+                        <a href="#" class="page-link">2</a>
+                    </div>
+                    <div class="page-item">
+                        <a href="#" class="page-link">3</a>
+                    </div>
+                    <div class="page-item">
+                        <a href="#" class="page-link" id="pagina-siguiente"><i class="fas fa-chevron-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para nueva asignación -->
+    <div class="modal" id="modal-asignacion">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-titulo"><i class="fas fa-tasks"></i> Nueva Asignación</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form id="form-asignacion">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reporte">Reporte</label>
+                        <select id="reporte" required>
+                            <option value="">Seleccionar reporte</option>
+                            <option value="PSJ-8A4B2C9D">PSJ-8A4B2C9D - Bache en calle principal</option>
+                            <option value="PSJ-5E7F1A3B">PSJ-5E7F1A3B - Alumbrado público defectuoso</option>
+                            <option value="PSJ-9C2D8E4F">PSJ-9C2D8E4F - Recolección de basura</option>
+                            <option value="PSJ-3B6F9A2D">PSJ-3B6F9A2D - Daño en acera</option>
+                            <option value="PSJ-7E1D5F3A">PSJ-7E1D5F3A - Señal de tráfico caída</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="funcionario">Funcionario</label>
+                        <select id="funcionario" required>
+                            <option value="">Seleccionar funcionario</option>
+                            <option value="1">Carlos Rodríguez</option>
+                            <option value="2">María González</option>
+                            <option value="3">Javier López</option>
+                            <option value="4">Ana Martínez</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fecha-asignacion">Fecha de asignación</label>
+                        <input type="date" id="fecha-asignacion" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha-limite">Fecha límite</label>
+                        <input type="date" id="fecha-limite" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="prioridad">Prioridad</label>
+                        <select id="prioridad" required>
+                            <option value="">Seleccionar prioridad</option>
+                            <option value="alta">Alta</option>
+                            <option value="media">Media</option>
+                            <option value="baja">Baja</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select id="estado" required>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="proceso">En proceso</option>
+                            <option value="completada">Completada</option>
+                            <option value="atrasada">Atrasada</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" rows="4" placeholder="Agregar detalles de la asignación..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="observaciones">Observaciones</label>
+                    <textarea id="observaciones" rows="3" placeholder="Agregar observaciones adicionales..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">Guardar Asignación</button>
+                    <button type="button" class="btn btn-danger" id="cancelar-asignacion">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Configuración de Supabase
+            const supabaseUrl = "https://okulnfrlydegkyujpssj.supabase.co";
+            const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o";
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // Verificar si el usuario está autenticado
+            const correoGuardado = localStorage.getItem("usuarioEmail");
+            if (correoGuardado) {
+                document.getElementById("correo-usuario").textContent = correoGuardado;
+                document.getElementById("admin-avatar").textContent = correoGuardado.charAt(0).toUpperCase();
+            } else {
+                // Si no hay correo guardado, redirigir al login
+                window.location.href = "panel.html";
+            }
+
+            // Cargar asignaciones desde Supabase
+            async function cargarAsignaciones() {
+                try {
+                    const { data: asignaciones, error } = await supabase.from('asignaciones').select('*');
+                    if (error) throw error;
+
+                    console.log("📌 Asignaciones obtenidas:", asignaciones);
+                    mostrarAsignacionesEnTabla(asignaciones);
+                    
+                    // Configurar filtros
+                    configurarFiltros(asignaciones);
+                    
+                } catch (e) {
+                    console.error("Error obteniendo asignaciones de Supabase:", e.message);
+                    document.getElementById("cuerpo-tabla").innerHTML = 
+                        `<tr><td colspan="9" style="text-align:center;padding:20px;">Error al cargar las asignaciones: ${e.message}</td></tr>`;
+                }
+            }
+
+            // Mostrar asignaciones en la tabla
+            function mostrarAsignacionesEnTabla(asignaciones) {
+                const cuerpoTabla = document.getElementById("cuerpo-tabla");
+                
+                if (asignaciones.length === 0) {
+                    cuerpoTabla.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;">No hay asignaciones para mostrar</td></tr>`;
+                    return;
+                }
+                
+                cuerpoTabla.innerHTML = asignaciones.map(asignacion => {
+                    // Determinar la clase del estado
+                    let claseEstado = '';
+                    let textoEstado = asignacion.estado || 'Pendiente';
+                    
+                    if (textoEstado === 'pendiente') claseEstado = 'status-pendiente';
+                    else if (textoEstado === 'proceso') claseEstado = 'status-proceso';
+                    else if (textoEstado === 'completada') claseEstado = 'status-completada';
+                    else if (textoEstado === 'atrasada') claseEstado = 'status-atrasada';
+                    
+                    // Determinar clase de prioridad
+                    let clasePrioridad = '';
+                    let textoPrioridad = asignacion.prioridad || 'media';
+                    
+                    if (textoPrioridad === 'alta') clasePrioridad = 'priority-alta';
+                    else if (textoPrioridad === 'media') clasePrioridad = 'priority-media';
+                    else if (textoPrioridad === 'baja') clasePrioridad = 'priority-baja';
+                    
+                    // Determinar progreso
+                    let progreso = asignacion.progreso || 0;
+                    let claseProgreso = '';
+                    
+                    if (progreso <= 25) claseProgreso = 'progress-25';
+                    else if (progreso <= 50) claseProgreso = 'progress-50';
+                    else if (progreso <= 75) claseProgreso = 'progress-75';
+                    else claseProgreso = '';
+                    
+                    // Formatear fechas
+                    const fechaAsignacion = new Date(asignacion.fecha_asignacion);
+                    const fechaLimite = new Date(asignacion.fecha_limite);
+                    const fechaAsignacionFormateada = fechaAsignacion.toLocaleDateString('es-ES');
+                    const fechaLimiteFormateada = fechaLimite.toLocaleDateString('es-ES');
+                    
+                    return `
+                        <tr>
+                            <td>${asignacion.id || 'N/A'}</td>
+                            <td><span class="badge badge-reporte">${asignacion.reporte_id || 'N/A'}</span></td>
+                            <td>${asignacion.funcionario_nombre || 'N/A'}</td>
+                            <td>${fechaAsignacionFormateada}</td>
+                            <td>${fechaLimiteFormateada}</td>
+                            <td class="${clasePrioridad}">${textoPrioridad.charAt(0).toUpperCase() + textoPrioridad.slice(1)}</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${claseProgreso}"></div>
+                                </div>
+                                <small>${progreso}%</small>
+                            </td>
+                            <td><span class="status-badge ${claseEstado}">${textoEstado.charAt(0).toUpperCase() + textoEstado.slice(1)}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="verAsignacion('${asignacion.id}')"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm" onclick="editarAsignacion('${asignacion.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarAsignacion('${asignacion.id}')"><i class="fas fa-times"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Configurar filtros
+            function configurarFiltros(asignaciones) {
+                const filtroEstado = document.getElementById('filtro-estado-asignacion');
+                const filtroPrioridad = document.getElementById('filtro-prioridad');
+                const filtroFecha = document.getElementById('filtro-fecha-asignacion');
+                const filtroFuncionario = document.getElementById('filtro-funcionario');
+                
+                function aplicarFiltros() {
+                    let asignacionesFiltradas = [...asignaciones];
+                    
+                    // Filtrar por estado
+                    if (filtroEstado.value) {
+                        asignacionesFiltradas = asignacionesFiltradas.filter(a => a.estado === filtroEstado.value);
+                    }
+                    
+                    // Filtrar por prioridad
+                    if (filtroPrioridad.value) {
+                        asignacionesFiltradas = asignacionesFiltradas.filter(a => a.prioridad === filtroPrioridad.value);
+                    }
+                    
+                    // Filtrar por fecha
+                    if (filtroFecha.value) {
+                        const fechaFiltro = new Date(filtroFecha.value);
+                        asignacionesFiltradas = asignacionesFiltradas.filter(a => {
+                            const fechaAsignacion = new Date(a.fecha_asignacion);
+                            return fechaAsignacion.toDateString() === fechaFiltro.toDateString();
+                        });
+                    }
+                    
+                    // Filtrar por funcionario
+                    if (filtroFuncionario.value) {
+                        asignacionesFiltradas = asignacionesFiltradas.filter(a => a.funcionario_id === filtroFuncionario.value);
+                    }
+                    
+                    mostrarAsignacionesEnTabla(asignacionesFiltradas);
+                }
+                
+                // Aplicar filtros cuando cambien los valores
+                filtroEstado.addEventListener('change', aplicarFiltros);
+                filtroPrioridad.addEventListener('change', aplicarFiltros);
+                filtroFecha.addEventListener('change', aplicarFiltros);
+                filtroFuncionario.addEventListener('change', aplicarFiltros);
+            }
+
+            // Funciones para las acciones de los botones
+            window.verAsignacion = function(id) {
+                alert(`Ver asignación con ID: ${id}`);
+                // Aquí puedes implementar la lógica para mostrar los detalles de la asignación
+            };
+            
+            window.editarAsignacion = function(id) {
+                const modal = document.getElementById('modal-asignacion');
+                document.getElementById('modal-titulo').textContent = 'Editar Asignación';
+                modal.style.display = 'flex';
+                // Aquí puedes cargar los datos de la asignación para editar
+            };
+            
+            window.eliminarAsignacion = function(id) {
+                if (confirm('¿Está seguro de que desea eliminar esta asignación?')) {
+                    alert(`Eliminar asignación con ID: ${id}`);
+                    // Aquí puedes implementar la lógica para eliminar la asignación
+                }
+            };
+
+            // Botón nueva asignación
+            document.getElementById('btn-nueva-asignacion').addEventListener('click', function() {
+                const modal = document.getElementById('modal-asignacion');
+                document.getElementById('modal-titulo').textContent = 'Nueva Asignación';
+                // Limpiar campos del modal
+                document.getElementById('form-asignacion').reset();
+                
+                // Establecer fecha actual como predeterminada
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('fecha-asignacion').value = today;
+                
+                // Establecer fecha límite predeterminada (7 días después)
+                const nextWeek = new Date();
+                nextWeek.setDate(nextWeek.getDate() + 7);
+                const nextWeekFormatted = nextWeek.toISOString().split('T')[0];
+                document.getElementById('fecha-limite').value = nextWeekFormatted;
+                
+                modal.style.display = 'flex';
+            });
+
+            // Funcionalidad para abrir y cerrar modales
+            const modal = document.getElementById('modal-asignacion');
+            const closeModalButtons = document.querySelectorAll('.close-modal');
+            const cancelBtn = document.getElementById('cancelar-asignacion');
+            
+            // Cerrar modales
+            closeModalButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+            });
+            
+            cancelBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            // Cerrar modal al hacer clic fuera del contenido
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // Envío del formulario
+            document.getElementById('form-asignacion').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Guardando asignación...');
+                // Aquí puedes implementar la lógica para guardar la asignación
+                modal.style.display = 'none';
+            });
+
+            // Cargar las asignaciones al iniciar
+            cargarAsignaciones();
+        });
+    </script>
+</body>
+</html>

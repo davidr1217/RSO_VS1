@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Zonas - Panel de Administración</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --azul-oscuro: #003366;
+            --azul-claro: #3399CC;
+            --rojo: #CC3333;
+            --blanco: #FFFFFF;
+            --gris-claro: #F5F5F5;
+            --gris-medio: #DDDDDD;
+            --gris-oscuro: #666666;
+            --verde: #28a745;
+            --naranja: #FF8C00;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--gris-claro);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .admin-header {
+            background: linear-gradient(to right, var(--azul-oscuro), var(--azul-claro));
+            color: var(--blanco);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .admin-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--azul-claro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--blanco);
+        }
+        
+        .main-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            width: 100%;
+            padding: 0 20px;
+            gap: 20px;
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            border-radius: 10px;
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            height: fit-content;
+        }
+        
+        .admin-welcome {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--azul-claro);
+            margin-bottom: 15px;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            text-decoration: none;
+            color: var(--blanco);
+            position: relative;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background-color: var(--azul-claro);
+            border-left: 4px solid var(--rojo);
+        }
+        
+        .menu-item i {
+            width: 25px;
+            text-align: center;
+        }
+        
+        .notification-badge {
+            background-color: var(--rojo);
+            color: var(--blanco);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            position: absolute;
+            right: 15px;
+        }
+        
+        .admin-content {
+            flex: 1;
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gris-medio);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--azul-claro);
+        }
+        
+        .btn-primary {
+            background-color: var(--azul-oscuro);
+        }
+        
+        .btn-success {
+            background-color: var(--verde);
+        }
+        
+        .btn-danger {
+            background-color: var(--rojo);
+        }
+        
+        .btn-warning {
+            background-color: var(--naranja);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--gris-claro);
+            border-radius: 8px;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--azul-oscuro);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--gris-medio);
+        }
+        
+        th {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--gris-claro);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-activo {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+        
+        .status-inactivo {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .page-item {
+            margin: 0 5px;
+        }
+        
+        .page-link {
+            padding: 8px 12px;
+            border: 1px solid var(--gris-medio);
+            border-radius: 5px;
+            color: var(--azul-oscuro);
+            text-decoration: none;
+        }
+        
+        .page-link.active {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gris-medio);
+        }
+        
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gris-oscuro);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .map-preview {
+            height: 200px;
+            background-color: var(--gris-claro);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: var(--gris-oscuro);
+            border: 1px dashed var(--gris-medio);
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-city fa-2x"></i>
+                <h1>Panel de Administración</h1>
+            </div>
+            <div class="admin-actions">
+                <div class="admin-info">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div>
+                        <div>Administrador del Sistema</div>
+                        <small id="correo-usuario">admin@alcaldiapasto.gov.co</small>
+                    </div>
+                </div>
+                <a href="panel.html" class="btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="admin-sidebar">
+            <div class="admin-welcome">
+                <h3>Hola, Administrador</h3>
+                <p>Bienvenido al panel de control</p>
+            </div>
+            
+            <!-- Menú de navegación para administrador -->
+            <div class="menu-item" data-target="dashboard" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            
+            <div class="menu-item" data-target="reportes" onclick="window.location.href='gestion-reportes.html'">
+                <i class="fas fa-flag"></i>
+                <span>Gestión de Reportes</span>
+                <span class="notification-badge">12</span>
+            </div>
+            
+            <div class="menu-item" data-target="usuarios" onclick="window.location.href='gestion-usuarios.html'">
+                <i class="fas fa-users"></i>
+                <span>Gestión de Usuarios</span>
+                <span class="notification-badge">5</span>
+            </div>
+            
+            <div class="menu-item active" data-target="zonas" onclick="window.location.href='gestion-zonas.html'">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Gestión de Zonas</span>
+            </div>
+            
+            <div class="menu-item" data-target="asignaciones" onclick="window.location.href='asignaciones.html'">
+                <i class="fas fa-tasks"></i>
+                <span>Asignaciones</span>
+                <span class="notification-badge">8</span>
+            </div>
+            
+            <div class="menu-item" data-target="estadisticas" onclick="window.location.href='estadisticas.html'">
+                <i class="fas fa-chart-bar"></i>
+                <span>Estadísticas</span>
+            </div>
+            
+            <div class="menu-item" data-target="configuracion" onclick="window.location.href='configuracion.html'">
+                <i class="fas fa-cog"></i>
+                <span>Configuración</span>
+            </div>
+        </div>
+        
+        <div class="admin-content">
+            <div class="dashboard-header">
+                <h2><i class="fas fa-map-marked-alt"></i> Gestión de Zonas</h2>
+                <button class="btn btn-success" id="btn-nueva-zona"><i class="fas fa-plus"></i> Nueva Zona</button>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="filtro-sector">Sector</label>
+                    <select id="filtro-sector">
+                        <option value="">Todos los sectores</option>
+                        <option value="centro">Centro</option>
+                        <option value="norte">Norte</option>
+                        <option value="sur">Sur</option>
+                        <option value="este">Este</option>
+                        <option value="oeste">Oeste</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filtro-estado-zona">Estado</label>
+                    <select id="filtro-estado-zona">
+                        <option value="">Todos los estados</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="buscar-zona">Buscar</label>
+                    <input type="text" id="buscar-zona" placeholder="Nombre de zona o código">
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="tabla-zonas">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Código</th>
+                            <th>Sector</th>
+                            <th>Área (km²)</th>
+                            <th>Reportes Activos</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla">
+                        <!-- Los datos se cargarán dinámicamente desde JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination">
+                <div class="page-item">
+                    <a href="#" class="page-link" id="pagina-anterior"><i class="fas fa-chevron-left"></i></a>
+                </div>
+                <div class="page-item">
+                    <a href="#" class="page-link active">1</a>
+                </div>
+                <div class="page-item">
+                    <a href="#" class="page-link">2</a>
+                </div>
+                <div class="page-item">
+                    <a href="#" class="page-link">3</a>
+                </div>
+                <div class="page-item">
+                    <a href="#" class="page-link" id="pagina-siguiente"><i class="fas fa-chevron-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE ZONA -->
+    <div class="modal" id="modal-zona">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-titulo">Detalle de Zona</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="map-preview">
+                <i class="fas fa-map-marked-alt fa-3x"></i>
+                <span>Vista previa del mapa de la zona</span>
+            </div>
+            <div class="form-group">
+                <label for="nombre-zona">Nombre de la Zona</label>
+                <input type="text" id="nombre-zona" value="Centro Histórico">
+            </div>
+            <div class="form-group">
+                <label for="codigo-zona">Código</label>
+                <input type="text" id="codigo-zona" value="Z-CH-001">
+            </div>
+            <div class="form-group">
+                <label for="sector-zona">Sector</label>
+                <select id="sector-zona">
+                    <option value="centro" selected>Centro</option>
+                    <option value="norte">Norte</option>
+                    <option value="sur">Sur</option>
+                    <option value="este">Este</option>
+                    <option value="oeste">Oeste</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="area-zona">Área (km²)</label>
+                <input type="number" id="area-zona" value="2.5" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="descripcion-zona">Descripción</label>
+                <textarea id="descripcion-zona" rows="4">Zona del centro histórico de la ciudad, incluye los principales monumentos y edificios gubernamentales.</textarea>
+            </div>
+            <div class="form-group">
+                <label>Estado</label>
+                <div>
+                    <input type="radio" id="estado-activo" name="estado-zona" checked>
+                    <label for="estado-activo" style="display: inline; margin-right: 15px;">Activo</label>
+                    <input type="radio" id="estado-inactivo" name="estado-zona">
+                    <label for="estado-inactivo" style="display: inline;">Inactivo</label>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-danger" id="btn-cancelar">Cancelar</button>
+                <button class="btn btn-success" id="btn-guardar">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Configuración de Supabase
+            const supabaseUrl = "https://okulnfrlydegkyujpssj.supabase.co";
+            const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdWxuZnJseWRlZ2t5dWpwc3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwODg2MjAsImV4cCI6MjA3NDY2NDYyMH0.j0vsvYfpOu0EcbtjGGVgJBCwp1LvWeLiKDALjmdFo4o";
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // Verificar si el usuario está autenticado
+            const correoGuardado = localStorage.getItem("usuarioEmail");
+            if (correoGuardado) {
+                document.getElementById("correo-usuario").textContent = correoGuardado;
+                document.getElementById("admin-avatar").textContent = correoGuardado.charAt(0).toUpperCase();
+            } else {
+                // Si no hay correo guardado, redirigir al login
+                window.location.href = "panel.html";
+            }
+
+            // Cargar zonas desde Supabase
+            async function cargarZonas() {
+                try {
+                    const { data: zonas, error } = await supabase.from('zonas').select('*');
+                    if (error) throw error;
+
+                    console.log("📌 Zonas obtenidas:", zonas);
+                    mostrarZonasEnTabla(zonas);
+                    
+                    // Configurar filtros
+                    configurarFiltros(zonas);
+                    
+                } catch (e) {
+                    console.error("Error obteniendo zonas de Supabase:", e.message);
+                    document.getElementById("cuerpo-tabla").innerHTML = 
+                        `<tr><td colspan="7" style="text-align:center;padding:20px;">Error al cargar las zonas: ${e.message}</td></tr>`;
+                }
+            }
+
+            // Mostrar zonas en la tabla
+            function mostrarZonasEnTabla(zonas) {
+                const cuerpoTabla = document.getElementById("cuerpo-tabla");
+                
+                if (zonas.length === 0) {
+                    cuerpoTabla.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;">No hay zonas para mostrar</td></tr>`;
+                    return;
+                }
+                
+                cuerpoTabla.innerHTML = zonas.map(zona => {
+                    // Determinar la clase del estado
+                    let claseEstado = zona.activo ? 'status-activo' : 'status-inactivo';
+                    let textoEstado = zona.activo ? 'Activo' : 'Inactivo';
+                    
+                    return `
+                        <tr>
+                            <td>${zona.nombre || 'N/A'}</td>
+                            <td>${zona.codigo || 'N/A'}</td>
+                            <td>${zona.sector || 'N/A'}</td>
+                            <td>${zona.area || 'N/A'}</td>
+                            <td>${zona.reportes_activos || '0'}</td>
+                            <td><span class="status-badge ${claseEstado}">${textoEstado}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="verZona('${zona.id}')"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm" onclick="editarZona('${zona.id}')"><i class="fas fa-edit"></i></button>
+                                ${zona.activo ? 
+                                    `<button class="btn btn-sm btn-danger" onclick="desactivarZona('${zona.id}')"><i class="fas fa-times"></i></button>` :
+                                    `<button class="btn btn-sm btn-success" onclick="activarZona('${zona.id}')"><i class="fas fa-check"></i></button>`
+                                }
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Configurar filtros
+            function configurarFiltros(zonas) {
+                const filtroSector = document.getElementById('filtro-sector');
+                const filtroEstado = document.getElementById('filtro-estado-zona');
+                const buscarZona = document.getElementById('buscar-zona');
+                
+                function aplicarFiltros() {
+                    let zonasFiltradas = [...zonas];
+                    
+                    // Filtrar por sector
+                    if (filtroSector.value) {
+                        zonasFiltradas = zonasFiltradas.filter(z => z.sector === filtroSector.value);
+                    }
+                    
+                    // Filtrar por estado
+                    if (filtroEstado.value) {
+                        const estadoFiltro = filtroEstado.value === 'activo';
+                        zonasFiltradas = zonasFiltradas.filter(z => z.activo === estadoFiltro);
+                    }
+                    
+                    // Filtrar por búsqueda
+                    if (buscarZona.value) {
+                        const termino = buscarZona.value.toLowerCase();
+                        zonasFiltradas = zonasFiltradas.filter(z => 
+                            z.nombre.toLowerCase().includes(termino) || 
+                            z.codigo.toLowerCase().includes(termino)
+                        );
+                    }
+                    
+                    mostrarZonasEnTabla(zonasFiltradas);
+                }
+                
+                // Aplicar filtros cuando cambien los valores
+                filtroSector.addEventListener('change', aplicarFiltros);
+                filtroEstado.addEventListener('change', aplicarFiltros);
+                buscarZona.addEventListener('input', aplicarFiltros);
+            }
+
+            // Funciones para las acciones de los botones
+            window.verZona = function(id) {
+                const modal = document.getElementById('modal-zona');
+                document.getElementById('modal-titulo').textContent = 'Detalle de Zona';
+                modal.style.display = 'flex';
+                // Aquí puedes cargar los datos específicos de la zona
+            };
+            
+            window.editarZona = function(id) {
+                const modal = document.getElementById('modal-zona');
+                document.getElementById('modal-titulo').textContent = 'Editar Zona';
+                modal.style.display = 'flex';
+                // Aquí puedes cargar los datos de la zona para editar
+            };
+            
+            window.desactivarZona = function(id) {
+                if (confirm('¿Está seguro de que desea desactivar esta zona?')) {
+                    alert(`Desactivar zona con ID: ${id}`);
+                    // Aquí puedes implementar la lógica para desactivar la zona
+                }
+            };
+            
+            window.activarZona = function(id) {
+                if (confirm('¿Está seguro de que desea activar esta zona?')) {
+                    alert(`Activar zona con ID: ${id}`);
+                    // Aquí puedes implementar la lógica para activar la zona
+                }
+            };
+
+            // Botón nueva zona
+            document.getElementById('btn-nueva-zona').addEventListener('click', function() {
+                const modal = document.getElementById('modal-zona');
+                document.getElementById('modal-titulo').textContent = 'Nueva Zona';
+                // Limpiar campos del modal
+                document.getElementById('nombre-zona').value = '';
+                document.getElementById('codigo-zona').value = '';
+                document.getElementById('sector-zona').value = 'centro';
+                document.getElementById('area-zona').value = '';
+                document.getElementById('descripcion-zona').value = '';
+                document.getElementById('estado-activo').checked = true;
+                
+                modal.style.display = 'flex';
+            });
+
+            // Funcionalidad para abrir y cerrar modales
+            const modal = document.getElementById('modal-zona');
+            const closeModalButtons = document.querySelectorAll('.close-modal');
+            const btnCancelar = document.getElementById('btn-cancelar');
+            
+            // Cerrar modales
+            closeModalButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+            });
+            
+            btnCancelar.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            // Cerrar modal al hacer clic fuera del contenido
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // Botón guardar
+            document.getElementById('btn-guardar').addEventListener('click', function() {
+                alert('Guardando cambios de zona...');
+                // Aquí puedes implementar la lógica para guardar la zona
+                modal.style.display = 'none';
+            });
+
+            // Cargar las zonas al iniciar
+            cargarZonas();
+        });
+    </script>
+</body>
+</html>

@@ -89,21 +89,51 @@
         </div>
     </header>
 
-    <div class="main-container">
-        <aside class="admin-sidebar">
-            <div class="admin-welcome">
-                <h3 style="margin-bottom:6px;">Hola, Administrador</h3>
-                <p style="font-size:0.9rem;color:rgba(255,255,255,0.9);">Bienvenido al panel de control</p>
-            </div>
+   <div class="main-container">
+    <aside class="admin-sidebar">
+        <div class="admin-welcome">
+            <h3 style="margin-bottom:6px;">Hola, Administrador</h3>
+            <p style="font-size:0.9rem;color:rgba(255,255,255,0.9);">Bienvenido al panel de control</p>
+        </div>
 
-            <div class="menu-item active"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></div>
-            <div class="menu-item"><i class="fas fa-flag"></i><span>Gestión de Reportes</span></div>
-            <div class="menu-item"><i class="fas fa-users"></i><span>Gestión de Usuarios</span></div>
-            <div class="menu-item"><i class="fas fa-map-marked-alt"></i><span>Gestión de Zonas</span></div>
-            <div class="menu-item"><i class="fas fa-tasks"></i><span>Asignaciones</span></div>
-            <div class="menu-item"><i class="fas fa-chart-bar"></i><span>Estadísticas</span></div>
-            <div class="menu-item"><i class="fas fa-cog"></i><span>Configuración</span></div>
-        </aside>
+        <div class="menu-item active " data-target="dashboard" onclick="window.location.href='dashboard.html'">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </div>
+        
+        <div class="menu-item" data-target="reportes" onclick="window.location.href='gestion-reportes.html'">
+            <i class="fas fa-flag"></i>
+            <span>Gestión de Reportes</span>
+            <span class="notification-badge">12</span>
+        </div>
+        
+        <div class="menu-item" data-target="usuarios" onclick="window.location.href='gestion-usuarios.html'">
+            <i class="fas fa-users"></i>
+            <span>Gestión de Usuarios</span>
+            <span class="notification-badge">5</span>
+        </div>
+        
+        <div class="menu-item" data-target="zonas" onclick="window.location.href='gestion-zonas.html'">
+            <i class="fas fa-map-marked-alt"></i>
+            <span>Gestión de Zonas</span>
+        </div>
+        
+        <div class="menu-item" data-target="asignaciones" onclick="window.location.href='asignaciones.html'">
+            <i class="fas fa-tasks"></i>
+            <span>Asignaciones</span>
+            <span class="notification-badge">8</span>
+        </div>
+        
+        <div class="menu-item" data-target="estadisticas" onclick="window.location.href='estadisticas.html'">
+            <i class="fas fa-chart-bar"></i>
+            <span>Estadísticas</span>
+        </div>
+        
+        <div class="menu-item" data-target="configuracion" onclick="window.location.href='configuracion.html'">
+            <i class="fas fa-cog"></i>
+            <span>Configuración</span>
+        </div>
+    </aside>
 
         <main class="admin-content">
             <section class="content-section" id="dashboard">
